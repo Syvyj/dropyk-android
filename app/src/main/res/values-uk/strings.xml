@@ -32,7 +32,12 @@
     <string name="update_permission">Дозвольте Dropyk встановлювати застосунки й поверніться — оновлення продовжиться саме</string>
     <string name="update_failed">Не вдалося оновити: %1$s</string>
     <string name="incoming_from">Quick Share від %1$s</string>
-    <string name="incoming_files">%1$s і ще %2$d</string>
+    <plurals name="incoming_files">
+        <item quantity="one">%1$s і ще %2$d</item>
+        <item quantity="few">%1$s і ще %2$d</item>
+        <item quantity="many">%1$s і ще %2$d</item>
+        <item quantity="other">%1$s і ще %2$d</item>
+    </plurals>
     <string name="incoming_pin">PIN %1$s — такий самий, як на телефоні?</string>
     <string name="accept">Прийняти</string>
     <string name="decline">Відхилити</string>

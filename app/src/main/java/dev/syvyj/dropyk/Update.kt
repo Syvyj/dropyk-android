@@ -1,15 +1,17 @@
 package dev.syvyj.dropyk
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Application
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
 import androidx.core.content.FileProvider
+import androidx.core.content.edit
+import androidx.core.net.toUri
 import java.io.File
 import java.net.HttpURLConnection
 import java.net.URL
@@ -32,6 +34,8 @@ data class AppRelease(val version: String, val apkUrl: String)
  * "Update" downloads the APK into the cache and opens the system installer — Android won't
  * install silently, and rightly so.
  */
+// Holds only the application context, which lives as long as the process: no leak.
+@SuppressLint("StaticFieldLeak")
 object Update {
     private lateinit var context: Context
     private val prefs get() = context.getSharedPreferences("update", Context.MODE_PRIVATE)
@@ -93,7 +97,7 @@ object Update {
         // No answer (no network, rate limit) isn't "checked": the next start asks again.
         if (result.isFailure) return@withContext
         val fresh = result.getOrNull()?.takeIf { newer(it.version, installed) }
-        prefs.edit().putLong(KEY_CHECKED, now).putString(KEY_RELEASE, fresh?.let(::encode)).apply()
+        prefs.edit { putLong(KEY_CHECKED, now).putString(KEY_RELEASE, fresh?.let(::encode)) }
         _available.value = fresh
     }
 
@@ -105,7 +109,7 @@ object Update {
     private fun install(release: AppRelease) {
         _error.value = null
         if (!canInstall()) {
-            val ask = Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:${context.packageName}"))
+            val ask = Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, "package:${context.packageName}".toUri())
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             runCatching { context.startActivity(ask) }
                 .onSuccess { waiting = release; _awaitingPermission.value = true }

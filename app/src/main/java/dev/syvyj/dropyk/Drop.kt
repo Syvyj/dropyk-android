@@ -1,5 +1,6 @@
 package dev.syvyj.dropyk
 
+import android.annotation.SuppressLint
 import android.content.ContentValues
 import android.content.Context
 import android.net.Uri
@@ -9,6 +10,7 @@ import android.os.StatFs
 import android.provider.MediaStore
 import android.util.Log
 import androidx.core.content.FileProvider
+import androidx.core.content.edit
 import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
@@ -53,12 +55,14 @@ sealed interface DropState {
  *
  * ponytail: one file at a time; the phone page sends a batch one by one.
  */
+// Holds only the application context, which lives as long as the process: no leak.
+@SuppressLint("StaticFieldLeak")
 object Drop {
     private lateinit var context: Context
     private val token: String by lazy {
         val prefs = context.getSharedPreferences("drop", Context.MODE_PRIVATE)
         prefs.getString("token", null) ?: ByteArray(8).also { SecureRandom().nextBytes(it) }
-            .joinToString("") { "%02x".format(it) }.also { prefs.edit().putString("token", it).apply() }
+            .joinToString("") { "%02x".format(it) }.also { prefs.edit { putString("token", it) } }
     }
     private val busy = AtomicBoolean(false)
     private var received = 0
@@ -146,7 +150,7 @@ object Drop {
             method == "POST" && route == "upload" -> {
                 val sorted = query["to"] == "sorted"
                 // Quick Share has no page to choose on, so it follows the phone page's last choice.
-                if ("to" in query) context.getSharedPreferences("drop", Context.MODE_PRIVATE).edit().putBoolean("sorted", sorted).apply()
+                if ("to" in query) context.getSharedPreferences("drop", Context.MODE_PRIVATE).edit { putBoolean("sorted", sorted) }
                 upload(input, out, query["name"].orEmpty(), length, sorted)
             }
             else -> out.reply(404, "text/plain", "Not found")

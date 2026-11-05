@@ -1,5 +1,6 @@
 package dev.syvyj.dropyk
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.net.nsd.NsdManager
 import android.net.nsd.NsdServiceInfo
@@ -59,6 +60,8 @@ import kotlin.concurrent.thread
  * Files are saved by [Drop], to the same folders as from the phone page, and the TV asks to
  * accept each transfer with the PIN the phone shows. Wi‑Fi LAN only, while Dropyk is open.
  */
+// Holds only the application context, which lives as long as the process: no leak.
+@SuppressLint("StaticFieldLeak")
 object QuickShare {
     private const val TAG = "QuickShare"
     private const val SERVICE_TYPE = "_FC9F5ED42C8A._tcp"
@@ -99,8 +102,10 @@ object QuickShare {
         })
     }
 
+    /** The name set in the TV's settings (Android 7.1+), else the model. */
     private fun deviceName(): String =
-        Settings.Global.getString(context.contentResolver, Settings.Global.DEVICE_NAME)?.takeIf { it.isNotBlank() } ?: Build.MODEL
+        (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) Settings.Global.getString(context.contentResolver, Settings.Global.DEVICE_NAME) else null)
+            ?.takeIf { it.isNotBlank() } ?: Build.MODEL
 
     /** Version/visibility/type byte (type 3 — a computer, the closest icon phones have), 16 random bytes, the name. */
     internal fun endpointInfo(name: String): ByteArray {

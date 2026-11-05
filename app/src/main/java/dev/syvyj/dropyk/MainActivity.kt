@@ -64,6 +64,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
+import androidx.core.net.toUri
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
@@ -228,7 +230,7 @@ private fun Transfer(state: DropState, actionFocus: FocusRequester) {
         is DropState.Incoming -> Panel(Modifier.fillMaxWidth()) {
             Text(stringResource(R.string.incoming_from, s.device), color = Muted, fontSize = 16.sp)
             Text(
-                if (s.count > 1) stringResource(R.string.incoming_files, s.what, s.count - 1) else s.what,
+                if (s.count > 1) pluralStringResource(R.plurals.incoming_files, s.count - 1, s.what, s.count - 1) else s.what,
                 color = Ink, fontSize = 24.sp, fontWeight = FontWeight.SemiBold, maxLines = 2, modifier = Modifier.padding(top = 4.dp),
             )
             Text(stringResource(R.string.incoming_pin, s.pin), color = Muted, fontSize = 18.sp, modifier = Modifier.padding(top = 10.dp))
@@ -242,7 +244,7 @@ private fun Transfer(state: DropState, actionFocus: FocusRequester) {
             Text(s.url, color = Accent, fontSize = 22.sp, maxLines = 2, modifier = Modifier.padding(top = 4.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp), modifier = Modifier.padding(top = 20.dp)) {
                 Action(stringResource(R.string.open_link), actionFocus) {
-                    openUri(context, Intent(Intent.ACTION_VIEW, Uri.parse(s.url)))
+                    openUri(context, Intent(Intent.ACTION_VIEW, s.url.toUri()))
                     Drop.dismiss()
                 }
                 Action(stringResource(R.string.done), null) { Drop.dismiss() }
@@ -522,7 +524,7 @@ private fun openUri(context: Context, intent: Intent, title: String? = null) {
 /** APK: first the one-time "install unknown apps" permission, then the system installer. */
 private fun install(context: Context, uri: Uri, name: String) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && !context.packageManager.canRequestPackageInstalls()) {
-        openUri(context, Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:${context.packageName}")))
+        openUri(context, Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, "package:${context.packageName}".toUri()))
         return
     }
     openFile(context, uri, name, Drop.APK)

@@ -35,7 +35,10 @@
     <string name="update_permission">Allow Dropyk to install apps, then come back — the update goes on by itself</string>
     <string name="update_failed">Couldn\'t update: %1$s</string>
     <string name="incoming_from">Quick Share from %1$s</string>
-    <string name="incoming_files">%1$s and %2$d more</string>
+    <plurals name="incoming_files">
+        <item quantity="one">%1$s and %2$d more</item>
+        <item quantity="other">%1$s and %2$d more</item>
+    </plurals>
     <string name="incoming_pin">PIN %1$s — the same as on the phone?</string>
     <string name="accept">Accept</string>
     <string name="decline">Decline</string>

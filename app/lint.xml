@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<lint>
+    <!-- Target 37 (Android 17) puts local network access behind a runtime permission, and
+         Dropyk lives on the local network: raise it together with that permission, tested. -->
+    <issue id="OldTargetApi" severity="ignore" />
+</lint>

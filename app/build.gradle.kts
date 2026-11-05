@@ -47,6 +47,7 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
     buildFeatures { compose = true }
+    lint { lintConfig = file("lint.xml") }
 }
 
 kotlin {
@@ -62,17 +63,17 @@ dependencies {
     implementation("androidx.compose.ui:ui")
     implementation("androidx.tv:tv-material:1.1.0")
     // QR matrix only — no camera or scanner.
-    implementation("com.google.zxing:core:3.5.3")
+    implementation("com.google.zxing:core:3.5.4")
     // Quick Share's wire format (the .proto files come from NearDrop).
-    implementation("com.google.protobuf:protobuf-javalite:4.29.3")
+    implementation("com.google.protobuf:protobuf-javalite:4.36.2")
 
     testImplementation("junit:junit:4.13.2")
     // A real org.json for JVM tests: android.jar only has a stub.
-    testImplementation("org.json:json:20240303")
+    testImplementation("org.json:json:20260814")
 }
 
 protobuf {
-    protoc { artifact = "com.google.protobuf:protoc:4.29.3" }
+    protoc { artifact = "com.google.protobuf:protoc:4.36.2" }
     generateProtoTasks {
         all().forEach { task -> task.builtins { create("java") { option("lite") } } }
     }
