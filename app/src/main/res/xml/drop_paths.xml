@@ -2,4 +2,6 @@
 <!-- Before Android 10 files land in the app's own Downloads folder (no storage permission needed). -->
 <paths>
     <external-files-path name="downloads" path="Download/" />
+    <!-- Downloaded updates, handed to the system installer. -->
+    <cache-path name="updates" path="updates/" />
 </paths>

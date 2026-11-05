@@ -27,4 +27,8 @@
     <string name="send_title">Надішліть на телевізор</string>
     <string name="url_hint">Або відкрийте цю адресу на телефоні:</string>
     <string name="link_title">Посилання з телефона</string>
+    <string name="update_to">Оновити до %1$s</string>
+    <string name="update_downloading">Завантажую оновлення… %1$d%%</string>
+    <string name="update_permission">Дозвольте Dropyk встановлювати застосунки й поверніться — оновлення продовжиться саме</string>
+    <string name="update_failed">Не вдалося оновити: %1$s</string>
 </resources>

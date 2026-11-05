@@ -13,8 +13,8 @@ android {
         applicationId = "dev.syvyj.dropyk"
         minSdk = 24
         targetSdk = 36
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = 2
+        versionName = "0.2.0"
     }
 
     // Release key from `.env` or `-P`; without it the release build is debug-signed.
@@ -62,4 +62,8 @@ dependencies {
     implementation("androidx.tv:tv-material:1.1.0")
     // QR matrix only — no camera or scanner.
     implementation("com.google.zxing:core:3.5.3")
+
+    testImplementation("junit:junit:4.13.2")
+    // A real org.json for JVM tests: android.jar only has a stub.
+    testImplementation("org.json:json:20240303")
 }

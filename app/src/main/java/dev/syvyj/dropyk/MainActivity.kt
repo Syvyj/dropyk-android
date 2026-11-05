@@ -92,6 +92,7 @@ class DropykApp : Application() {
     override fun onCreate() {
         super.onCreate()
         Drop.init(this)
+        Update.init(this)
         // Lets watch() hand players a file:// path; Android 7+ kills the app for that by default.
         StrictMode.setVmPolicy(StrictMode.VmPolicy.Builder().build())
     }
@@ -129,6 +130,11 @@ private fun DropScreen() {
     var support by remember { mutableStateOf(false) }
     val supportFocus = remember { FocusRequester() }
     val idle = state is DropState.Waiting || state is DropState.Connected || state is DropState.Failed
+    val update by Update.available.collectAsStateWithLifecycle()
+    val updating by Update.progress.collectAsStateWithLifecycle()
+    val updateError by Update.error.collectAsStateWithLifecycle()
+    val awaitingPermission by Update.awaitingPermission.collectAsStateWithLifecycle()
+    LaunchedEffect(Unit) { Update.check() }
 
     if (support && idle) {
         BackHandler { support = false }
@@ -159,12 +165,23 @@ private fun DropScreen() {
 
             Row(Modifier.fillMaxWidth().height(56.dp), verticalAlignment = Alignment.CenterVertically) {
                 Box(Modifier.weight(1f)) {
-                    when (val s = state) {
+                    val pct = updating
+                    when {
+                        pct != null -> Status(stringResource(R.string.update_downloading, (pct * 100).toInt())) { Spinner() }
+                        awaitingPermission -> Status(stringResource(R.string.update_permission)) { Dot(Accent) }
+                        updateError != null -> Status(stringResource(R.string.update_failed, updateError.orEmpty()), color = Bad) { Dot(Bad) }
+                        else -> when (val s = state) {
                         DropState.Waiting -> if (url != null) Status(stringResource(R.string.waiting)) { Spinner() }
                         DropState.Connected -> Status(stringResource(R.string.connected)) { Dot(Ok) }
                         is DropState.Failed -> Status(stringResource(R.string.failed, s.name), color = Bad) { Dot(Bad) }
                         else -> Unit
                     }
+                    }
+                }
+                val release = update
+                if (idle && release != null && updating == null) {
+                    Action(stringResource(R.string.update_to, release.version), null) { Update.start(release) }
+                    Box(Modifier.width(14.dp))
                 }
                 if (idle) Action(stringResource(R.string.support), supportFocus, heart = true) { support = true }
             }

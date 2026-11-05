@@ -30,4 +30,8 @@
     <string name="send_title">Send to TV</string>
     <string name="url_hint">Or open this address on the phone:</string>
     <string name="link_title">Link from the phone</string>
+    <string name="update_to">Update to %1$s</string>
+    <string name="update_downloading">Downloading the update… %1$d%%</string>
+    <string name="update_permission">Allow Dropyk to install apps, then come back — the update goes on by itself</string>
+    <string name="update_failed">Couldn\'t update: %1$s</string>
 </resources>
