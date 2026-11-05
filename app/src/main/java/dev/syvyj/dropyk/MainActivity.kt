@@ -93,6 +93,7 @@ class DropykApp : Application() {
         super.onCreate()
         Drop.init(this)
         Update.init(this)
+        QuickShare.start(this)
         // Lets watch() hand players a file:// path; Android 7+ kills the app for that by default.
         StrictMode.setVmPolicy(StrictMode.VmPolicy.Builder().build())
     }
@@ -190,7 +191,7 @@ private fun DropScreen() {
     if (idle) FocusOnShow(supportFocus, support)
 
     // Something arrived: focus jumps to the action — the person is holding a remote now.
-    if (state is DropState.Received || state is DropState.Link) FocusOnShow(actionFocus, state)
+    if (state is DropState.Received || state is DropState.Link || state is DropState.Incoming) FocusOnShow(actionFocus, state)
 }
 
 /** Everything that isn't the QR: progress, the received file with its actions, a link. */
@@ -224,6 +225,18 @@ private fun Transfer(state: DropState, actionFocus: FocusRequester) {
             Text(stringResource(R.string.saved_to, s.folder), color = Muted, fontSize = 16.sp, modifier = Modifier.padding(top = 16.dp))
             }
         } }
+        is DropState.Incoming -> Panel(Modifier.fillMaxWidth()) {
+            Text(stringResource(R.string.incoming_from, s.device), color = Muted, fontSize = 16.sp)
+            Text(
+                if (s.count > 1) stringResource(R.string.incoming_files, s.what, s.count - 1) else s.what,
+                color = Ink, fontSize = 24.sp, fontWeight = FontWeight.SemiBold, maxLines = 2, modifier = Modifier.padding(top = 4.dp),
+            )
+            Text(stringResource(R.string.incoming_pin, s.pin), color = Muted, fontSize = 18.sp, modifier = Modifier.padding(top = 10.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(16.dp), modifier = Modifier.padding(top = 20.dp)) {
+                Action(stringResource(R.string.accept), actionFocus) { s.accept() }
+                Action(stringResource(R.string.decline), null) { s.decline() }
+            }
+        }
         is DropState.Link -> Panel(Modifier.fillMaxWidth()) {
             Text(stringResource(R.string.link_title), color = Muted, fontSize = 16.sp)
             Text(s.url, color = Accent, fontSize = 22.sp, maxLines = 2, modifier = Modifier.padding(top = 4.dp))

@@ -36,6 +36,8 @@ sealed interface DropState {
      */
     data class Received(val uri: Uri, val path: String, val name: String, val mime: String, val folder: String, val count: Int) : DropState
     data class Link(val url: String) : DropState
+    /** Quick Share from [device] asks to send [what] ([count] items); the TV shows [pin] to compare with the phone. */
+    data class Incoming(val device: String, val pin: String, val what: String, val count: Int, val accept: () -> Unit, val decline: () -> Unit) : DropState
     data class Failed(val name: String) : DropState
 }
 
@@ -91,6 +93,18 @@ object Drop {
         return "http://$ip:${server.localPort}/$token/".also { address = it }
     }
 
+    /** Where Quick Share saves: the phone page's last choice, Downloads until there is one. */
+    internal val sorted: Boolean get() = context.getSharedPreferences("drop", Context.MODE_PRIVATE).getBoolean("sorted", false)
+
+    /** For Quick Share: the same screen states the phone page drives. */
+    internal fun show(state: DropState) { _state.value = state }
+
+    /** A finished file from Quick Share, shown like one from the page. */
+    internal fun received(target: Target, mime: String) {
+        received++
+        _state.value = DropState.Received(target.uri, target.path, target.name, mime, target.folder, received)
+    }
+
     /** Back to the QR once the received file was dealt with. */
     fun dismiss() {
         if (_state.value !is DropState.Receiving) _state.value = DropState.Waiting
@@ -129,7 +143,12 @@ object Drop {
                     out.error(400, "not_a_link")
                 }
             }
-            method == "POST" && route == "upload" -> upload(input, out, query["name"].orEmpty(), length, sorted = query["to"] == "sorted")
+            method == "POST" && route == "upload" -> {
+                val sorted = query["to"] == "sorted"
+                // Quick Share has no page to choose on, so it follows the phone page's last choice.
+                if ("to" in query) context.getSharedPreferences("drop", Context.MODE_PRIVATE).edit().putBoolean("sorted", sorted).apply()
+                upload(input, out, query["name"].orEmpty(), length, sorted)
+            }
             else -> out.reply(404, "text/plain", "Not found")
         }
     }
@@ -182,7 +201,7 @@ object Drop {
         }
     }
 
-    private class Target(val uri: Uri, val name: String, val folder: String, val file: File? = null) {
+    internal class Target(val uri: Uri, val name: String, val folder: String, val file: File? = null) {
         val path: String get() = file?.path ?: File(Environment.getExternalStorageDirectory(), "$folder/$name").path
     }
 
@@ -190,7 +209,7 @@ object Drop {
      * A new file in its folder; MediaStore renames duplicates itself ("name (1).jpg").
      * Each media collection only accepts its own top folder, hence the pairs below.
      */
-    private fun create(name: String, mime: String, sorted: Boolean): Target {
+    internal fun create(name: String, mime: String, sorted: Boolean): Target {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             val (collection, top) = when {
                 !sorted -> MediaStore.Downloads.EXTERNAL_CONTENT_URI to Environment.DIRECTORY_DOWNLOADS
@@ -218,16 +237,16 @@ object Drop {
         return Target(FileProvider.getUriForFile(context, "${context.packageName}.files", file), file.name, legacyDir.path, file)
     }
 
-    private fun publish(target: Target) {
+    internal fun publish(target: Target) {
         if (target.file != null || Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return
         context.contentResolver.update(target.uri, ContentValues().apply { put(MediaStore.MediaColumns.IS_PENDING, 0) }, null, null)
     }
 
-    private fun discard(target: Target) {
+    internal fun discard(target: Target) {
         runCatching { if (target.file != null) target.file.delete() else context.contentResolver.delete(target.uri, null, null) }
     }
 
-    private fun free(): Long = runCatching { StatFs(Environment.getExternalStorageDirectory().path).availableBytes }.getOrDefault(0)
+    internal fun free(): Long = runCatching { StatFs(Environment.getExternalStorageDirectory().path).availableBytes }.getOrDefault(0)
 
     private fun unique(name: String): File {
         val stem = name.substringBeforeLast('.')
@@ -269,10 +288,10 @@ object Drop {
     }
 
     private const val TAG = "Drop"
-    private const val PROGRESS_EVERY_MS = 500L
+    internal const val PROGRESS_EVERY_MS = 500L
     private val PORTS = 8776..8780
     /** Leave the system 200 MB: a box filled to the brim slows down and can't update. */
-    private const val MARGIN = 200L * 1024 * 1024
+    internal const val MARGIN = 200L * 1024 * 1024
     const val FOLDER = "Dropyk"
 
     /** First private IPv4 on a real interface, wired first; VPN tunnels skipped. */

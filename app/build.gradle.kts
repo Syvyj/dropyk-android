@@ -3,6 +3,7 @@ import java.util.Properties
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.plugin.compose")
+    id("com.google.protobuf")
 }
 
 android {
@@ -36,7 +37,7 @@ android {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"))
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             signingConfig = signingConfigs.getByName(if (releaseKeystore != null) "release" else "debug")
         }
     }
@@ -62,8 +63,17 @@ dependencies {
     implementation("androidx.tv:tv-material:1.1.0")
     // QR matrix only — no camera or scanner.
     implementation("com.google.zxing:core:3.5.3")
+    // Quick Share's wire format (the .proto files come from NearDrop).
+    implementation("com.google.protobuf:protobuf-javalite:4.29.3")
 
     testImplementation("junit:junit:4.13.2")
     // A real org.json for JVM tests: android.jar only has a stub.
     testImplementation("org.json:json:20240303")
+}
+
+protobuf {
+    protoc { artifact = "com.google.protobuf:protoc:4.29.3" }
+    generateProtoTasks {
+        all().forEach { task -> task.builtins { create("java") { option("lite") } } }
+    }
 }
