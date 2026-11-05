@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="{{lang}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>[[Dropyk: from your phone to the TV in one scan||Dropyk: з телефона на телевізор одним скануванням]]</title>
+<meta name="description" content="[[Free, open-source app for Android TV and Google TV. Open it, scan the code with your phone and send videos, photos, APKs and links over your Wi‑Fi. No app on the phone, no cloud, no account.||Безкоштовний застосунок з відкритим кодом для Android TV і Google TV. Відкрийте, проскануйте код телефоном і надсилайте відео, фото, APK та посилання через домашній Wi‑Fi. Без застосунку на телефоні, без хмари й акаунта.]]">
+<link rel="canonical" href="{{url}}">
+<link rel="alternate" hreflang="en" href="https://dropyk.syvyj.dev/">
+<link rel="alternate" hreflang="uk" href="https://dropyk.syvyj.dev/uk/">
+<meta property="og:title" content="Dropyk">
+<meta property="og:description" content="[[From your phone to the TV in one scan.||З телефона на телевізор одним скануванням.]]">
+<meta property="og:image" content="https://dropyk.syvyj.dev/assets/{{lang}}-tv-waiting.webp">
+<meta property="og:url" content="{{url}}">
+<meta name="theme-color" content="#12141F">
+<link rel="icon" type="image/png" sizes="32x32" href="{{root}}assets/icon-32.png">
+<link rel="apple-touch-icon" href="{{root}}assets/icon-180.png">
+<link rel="preload" href="{{root}}fonts/manrope-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="{{root}}style.css?v={{ver}}">
+</head>
+<body>
+<a class="skip" href="#main">[[Skip to content||Перейти до змісту]]</a>
+
+<header class="nav">
+  <a class="brand" href="{{home}}" aria-label="Dropyk">
+    <svg aria-hidden="true"><use href="#drop"/></svg>
+    <span>Dropyk</span>
+  </a>
+  <nav aria-label="[[Main||Головне]]">
+    <a href="#how">[[How it works||Як це працює]]</a>
+    <a href="#where">[[Where files go||Куди лягають файли]]</a>
+    <a href="#support">[[Support||Підтримати]]</a>
+  </nav>
+  <div class="nav-tools">
+    <a class="lang" href="{{other}}" hreflang="{{other_lang}}" lang="{{other_lang}}">[[UA||EN]]</a>
+    <a class="btn btn-small" href="{{download}}">[[Download||Завантажити]]</a>
+  </div>
+</header>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4C8DFF"/><stop offset="1" stop-color="#7A4CF2"/></linearGradient>
+    <symbol id="drop" viewBox="282 180 460 635">
+      <path fill="url(#g)" d="M512 194C572 304 727 424 727 584A215 215 0 0 1 297 584C297 424 452 304 512 194Z"/>
+      <path d="M512 464V684M417 589L512 684L607 589" fill="none" stroke="#fff" stroke-width="46" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+  </defs>
+</svg>
+
+<main id="main">
+
+<section class="hero" aria-labelledby="hero-title">
+  <div class="hero-copy">
+    <p class="eyebrow">[[For Android TV and Google TV||Для Android TV і Google TV]]</p>
+    <h1 id="hero-title">[[From your phone to the TV <em>in one scan.</em>||З телефона на телевізор <em>одним скануванням.</em>]]</h1>
+    <p class="lead">[[Open Dropyk on the TV, point your phone's camera at the code and pick files. Videos, photos, APKs and links go straight over your home Wi‑Fi — no app on the phone, no cloud, no account.||Відкрийте Dropyk на телевізорі, наведіть камеру телефона на код і виберіть файли. Відео, фото, APK та посилання йдуть просто через домашній Wi‑Fi — без застосунку на телефоні, без хмари й акаунта.]]</p>
+    <div class="cta">
+      <a class="btn" href="{{download}}">[[Download the APK||Завантажити APK]]</a>
+      <a class="btn btn-ghost" href="{{repo}}">[[Source on GitHub||Код на GitHub]]</a>
+    </div>
+    <ul class="facts" aria-label="[[At a glance||Коротко]]">
+      <li>Android 7.0+</li><li>~1 [[MB||МБ]]</li><li>GPL-3.0</li><li>[[No account||Без акаунта]]</li><li>[[No cloud||Без хмари]]</li>
+    </ul>
+  </div>
+  <div class="hero-shot">
+    <img class="tv" src="{{root}}assets/{{lang}}-tv-waiting.webp" alt="[[Dropyk on a TV: a QR code and two steps — scan the code, choose files||Dropyk на телевізорі: QR-код і два кроки — проскануйте код, виберіть файли]]" width="1440" height="810" fetchpriority="high">
+    <img class="phone" src="{{root}}assets/{{lang}}-phone.webp" alt="[[The page on the phone: Choose files, Downloads or By type, Or a link||Сторінка на телефоні: Вибрати файли, У завантаження чи За типом, Або посилання]]" width="666" height="1000">
+  </div>
+</section>
+
+<section class="how" id="how" aria-labelledby="how-title">
+  <p class="eyebrow">[[How it works||Як це працює]]</p>
+  <h2 id="how-title">[[Three steps, <em>one remote.</em>||Три кроки, <em>один пульт.</em>]]</h2>
+  <ol class="steps">
+    <li>
+      <img src="{{root}}assets/{{lang}}-tv-waiting.webp" alt="" width="1440" height="810" loading="lazy">
+      <h3>[[1. Scan||1. Скануйте]]</h3>
+      <p>[[Open Dropyk on the TV. The code leads your phone to a page the TV serves itself. Bookmark it — it keeps working.||Відкрийте Dropyk на телевізорі. Код веде телефон на сторінку, яку віддає сам телевізор. Додайте її в закладки — вона й далі працюватиме.]]</p>
+    </li>
+    <li>
+      <img src="{{root}}assets/{{lang}}-tv-receiving.webp" alt="" width="1440" height="810" loading="lazy">
+      <h3>[[2. Send||2. Надішліть]]</h3>
+      <p>[[Pick one file or a hundred. They go one by one, straight to the TV's storage — a 4 GB film never passes through its memory.||Виберіть один файл чи сотню. Вони йдуть по черзі, одразу на диск телевізора — фільм на 4 ГБ не проходить через його пам'ять.]]</p>
+    </li>
+    <li>
+      <img src="{{root}}assets/{{lang}}-tv-received.webp" alt="" width="1440" height="810" loading="lazy">
+      <h3>[[3. Press OK||3. Натисніть OK]]</h3>
+      <p>[[The TV offers what to do: a video plays, an APK installs, a photo shows on screen, a link opens.||Телевізор сам пропонує, що робити: відео — дивитись, APK — встановити, фото — показати, посилання — відкрити.]]</p>
+    </li>
+  </ol>
+</section>
+
+<section class="where" id="where" aria-labelledby="where-title">
+  <div>
+    <p class="eyebrow">[[Where files go||Куди лягають файли]]</p>
+    <h2 id="where-title">[[Your choice, <em>on the phone.</em>||Обираєте <em>на телефоні.</em>]]</h2>
+  </div>
+  <div class="cards">
+    <div class="card">
+      <h3>[[Downloads||У завантаження]]</h3>
+      <p>[[Everything in <code>Download/Dropyk</code>. Any file manager finds it.||Усе в <code>Download/Dropyk</code>. Знайде будь-який файловий менеджер.]]</p>
+    </div>
+    <div class="card">
+      <h3>[[By type||За типом]]</h3>
+      <p>[[Videos in <code>Movies/Dropyk</code>, photos in <code>Pictures/Dropyk</code>, music in <code>Music/Dropyk</code> — where players and galleries look first.||Відео в <code>Movies/Dropyk</code>, фото в <code>Pictures/Dropyk</code>, музика в <code>Music/Dropyk</code> — там, де їх насамперед шукають плеєри й галереї.]]</p>
+    </div>
+  </div>
+</section>
+
+<section class="private" aria-labelledby="private-title">
+  <h2 id="private-title">[[Nothing leaves <em>your home.</em>||Нічого не виходить <em>за межі дому.</em>]]</h2>
+  <ul>
+    <li>[[Files go from the phone to the TV over your own network. No server in between, nothing uploaded anywhere.||Файли йдуть з телефона на телевізор вашою власною мережею. Жодного сервера посередині, нічого нікуди не вивантажується.]]</li>
+    <li>[[The page address carries a secret key, so only someone who saw the code can send.||В адресі сторінки є секретний ключ, тож надіслати може лише той, хто бачив код.]]</li>
+    <li>[[The TV listens only while Dropyk is open. No account, no ads, no tracking.||Телевізор приймає, лише поки відкритий Dropyk. Без акаунта, реклами й стеження.]]</li>
+  </ul>
+</section>
+
+<section class="next" aria-labelledby="next-title">
+  <p class="eyebrow">[[Coming next||Далі]]</p>
+  <h2 id="next-title">[[One drop point, <em>from anything.</em>||Одна точка прийому — <em>з будь-чого.</em>]]</h2>
+  <p class="lead">[[Today you send from any phone or laptop with a browser. Planned: the TV in the Quick Share menu of Android phones, sending from a Mac with Dropyk for Mac, and a share-sheet shortcut for iPhone.||Сьогодні надсилати можна з будь-якого телефона чи ноутбука з браузером. У планах: телевізор у меню Quick Share на Android-телефонах, надсилання з Mac через Dropyk для Mac і ярлик у меню «Поділитися» на iPhone.]]</p>
+</section>
+
+<section class="install" id="install" aria-labelledby="install-title">
+  <h2 id="install-title">[[Install||Встановлення]]</h2>
+  <ol>
+    <li>[[Download <a href="{{download}}">dropyk.apk</a>.||Завантажте <a href="{{download}}">dropyk.apk</a>.]]</li>
+    <li>[[Get it onto the TV: the Downloader app, a USB stick, or <code>adb install dropyk.apk</code>.||Перенесіть на телевізор: застосунком Downloader, флешкою або командою <code>adb install dropyk.apk</code>.]]</li>
+    <li>[[Allow installing from that source when the TV asks, then open Dropyk from the app list.||Коли телевізор попросить, дозвольте встановлення з цього джерела, потім відкрийте Dropyk зі списку застосунків.]]</li>
+  </ol>
+</section>
+
+<section class="support" id="support" aria-labelledby="support-title">
+  <h2 id="support-title">[[Support <em>Dropyk.</em>||Підтримати <em>Dropyk.</em>]]</h2>
+  <p class="lead">[[Dropyk is free and will stay free. If it saved you a cable or a cloud upload, a coffee helps.||Dropyk безкоштовний і таким лишиться. Якщо він зекономив вам кабель чи вивантаження в хмару — кава допоможе.]]</p>
+  <div class="gives">
+{{donate}}
+  </div>
+</section>
+
+</main>
+
+<footer class="footer">
+  <p>Dropyk · GPL-3.0 · <a href="{{repo}}">GitHub</a></p>
+  <p>[[Also by the author:||Також від автора:]] <a href="https://likhtar.syvyj.dev/">Likhtar Home</a> · <a href="https://shotleaf.syvyj.dev/">Shotleaf</a></p>
+</footer>
+</body>
+</html>
