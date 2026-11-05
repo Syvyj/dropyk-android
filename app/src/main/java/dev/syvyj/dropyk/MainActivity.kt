@@ -55,6 +55,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
@@ -108,6 +109,7 @@ private fun DropScreen() {
     val state by Drop.state.collectAsStateWithLifecycle()
     val actionFocus = remember { FocusRequester() }
     var support by remember { mutableStateOf(false) }
+    val supportFocus = remember { FocusRequester() }
     val idle = state is DropState.Waiting || state is DropState.Connected || state is DropState.Failed
 
     if (support && idle) {
@@ -119,8 +121,9 @@ private fun DropScreen() {
     Box(Modifier.fillMaxSize().background(Bg).padding(horizontal = 64.dp, vertical = 48.dp)) {
         if (idle) {
             Box(Modifier.align(Alignment.BottomEnd)) {
-                Action(stringResource(R.string.support), null) { support = true }
+                Action(stringResource(R.string.support), supportFocus) { support = true }
             }
+            FocusOnShow(supportFocus, support)
         }
         Column(Modifier.align(Alignment.Center).width(820.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(20.dp)) {
@@ -191,8 +194,21 @@ private fun DropScreen() {
     }
 
     // Something arrived: focus jumps to the action — the person is holding a remote now.
-    LaunchedEffect(state) {
-        if (state is DropState.Received || state is DropState.Link) runCatching { actionFocus.requestFocus() }
+    if (state is DropState.Received || state is DropState.Link) FocusOnShow(actionFocus, state)
+}
+
+/**
+ * Focus [requester] once [key] changes. When a screen swaps, Compose hands focus to the new button
+ * before the button listens for focus events, so it stays drawn unfocused (seen on the TV box).
+ * Clearing and requesting again a frame later sends a focus event the button does see.
+ */
+@Composable
+private fun FocusOnShow(requester: FocusRequester, key: Any) {
+    val focusManager = LocalFocusManager.current
+    LaunchedEffect(key) {
+        withFrameNanos { }
+        focusManager.clearFocus(force = true)
+        runCatching { requester.requestFocus() }
     }
 }
 
@@ -330,8 +346,7 @@ private fun SupportScreen(onClose: () -> Unit) {
             Box(Modifier.padding(top = 36.dp)) { Action(stringResource(R.string.close), focus, onClose) }
         }
     }
-    // One frame first: the button isn't attached yet when this screen replaces the main one.
-    LaunchedEffect(Unit) { withFrameNanos { }; runCatching { focus.requestFocus() } }
+    FocusOnShow(focus, Unit)
 }
 
 private fun openFile(context: Context, uri: Uri, name: String, mime: String) {
