@@ -30,8 +30,11 @@ sealed interface DropState {
     data object Waiting : DropState
     data object Connected : DropState
     data class Receiving(val name: String, val done: Long, val total: Long) : DropState
-    /** [uri] is the saved file, handed to the player or installer; [folder] is shown to the person. */
-    data class Received(val uri: Uri, val name: String, val mime: String, val folder: String, val count: Int) : DropState
+    /**
+     * [uri] is the saved file, handed to the installer and viewers; [path] goes to video and audio
+     * players (see MainActivity.watch); [folder] is shown to the person.
+     */
+    data class Received(val uri: Uri, val path: String, val name: String, val mime: String, val folder: String, val count: Int) : DropState
     data class Link(val url: String) : DropState
     data class Failed(val name: String) : DropState
 }
@@ -168,7 +171,7 @@ object Drop {
             }
             publish(target)
             received++
-            _state.value = DropState.Received(target.uri, target.name, mime, target.folder, received)
+            _state.value = DropState.Received(target.uri, target.path, target.name, mime, target.folder, received)
             out.reply(200, "application/json", """{"folder":"${target.folder}"}""")
         } catch (e: Exception) {
             discard(target)
@@ -179,7 +182,9 @@ object Drop {
         }
     }
 
-    private class Target(val uri: Uri, val name: String, val folder: String, val file: File? = null)
+    private class Target(val uri: Uri, val name: String, val folder: String, val file: File? = null) {
+        val path: String get() = file?.path ?: File(Environment.getExternalStorageDirectory(), "$folder/$name").path
+    }
 
     /**
      * A new file in its folder; MediaStore renames duplicates itself ("name (1).jpg").

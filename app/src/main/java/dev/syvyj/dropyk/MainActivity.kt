@@ -8,6 +8,7 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.StrictMode
 import android.provider.Settings
 import android.util.Log
 import android.view.WindowManager
@@ -82,6 +83,8 @@ class DropykApp : Application() {
     override fun onCreate() {
         super.onCreate()
         Drop.init(this)
+        // Lets watch() hand players a file:// path; Android 7+ kills the app for that by default.
+        StrictMode.setVmPolicy(StrictMode.VmPolicy.Builder().build())
     }
 }
 
@@ -168,7 +171,7 @@ private fun DropScreen() {
                     Row(horizontalArrangement = Arrangement.spacedBy(16.dp), modifier = Modifier.padding(top = 8.dp)) {
                         when {
                             s.mime.startsWith("video/") || s.mime.startsWith("audio/") ->
-                                Action(stringResource(R.string.watch), actionFocus) { openFile(context, s.uri, s.name, s.mime) }
+                                Action(stringResource(R.string.watch), actionFocus) { watch(context, s.path, s.name, s.mime) }
                             s.mime == Drop.APK -> Action(stringResource(R.string.install), actionFocus) { install(context, s.uri, s.name) }
                             s.mime.startsWith("image/") -> Unit
                             else -> Action(stringResource(R.string.open), actionFocus) { openFile(context, s.uri, s.name, s.mime) }
@@ -347,6 +350,16 @@ private fun SupportScreen(onClose: () -> Unit) {
         }
     }
     FocusOnShow(focus, Unit)
+}
+
+/**
+ * Video and audio go to the player as a file path, the way file managers open them. Handed the
+ * content:// link instead, every player on a Realtek Google TV box (Just Player, Vimu, the file
+ * manager's own) played the sound of a phone video with no picture; by path the same file shows.
+ * A player without storage access can't open a path — that's the price.
+ */
+private fun watch(context: Context, path: String, name: String, mime: String) {
+    openUri(context, Intent(Intent.ACTION_VIEW).setDataAndType(Uri.fromFile(java.io.File(path)), mime), name)
 }
 
 private fun openFile(context: Context, uri: Uri, name: String, mime: String) {
