@@ -148,7 +148,8 @@ object Drop {
                 }
             }
             method == "POST" && route == "upload" -> {
-                val sorted = query["to"] == "sorted"
+                // No choice in the request (the iPhone shortcut, old bookmarks): the page's last one.
+                val sorted = if ("to" in query) query["to"] == "sorted" else this.sorted
                 // Quick Share has no page to choose on, so it follows the phone page's last choice.
                 if ("to" in query) context.getSharedPreferences("drop", Context.MODE_PRIVATE).edit { putBoolean("sorted", sorted) }
                 upload(input, out, query["name"].orEmpty(), length, sorted)
