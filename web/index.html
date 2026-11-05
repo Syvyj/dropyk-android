@@ -3,23 +3,34 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Dropyk: from your phone to the TV in one scan</title>
+<title>Dropyk — send to TV</title>
 <meta name="description" content="Free, open-source app for Android TV and Google TV. Open it, scan the code with your phone and send videos, photos, APKs and links over your Wi‑Fi. No app on the phone, no cloud, no account.">
 <link rel="canonical" href="https://dropyk.syvyj.dev/">
 <link rel="alternate" hreflang="en" href="https://dropyk.syvyj.dev/">
 <link rel="alternate" hreflang="uk" href="https://dropyk.syvyj.dev/uk/">
 <meta property="og:title" content="Dropyk">
-<meta property="og:description" content="From your phone to the TV in one scan.">
-<meta property="og:image" content="https://dropyk.syvyj.dev/assets/en-tv-waiting.webp">
+<meta property="og:description" content="From your phone to the TV — in one scan.">
+<meta property="og:image" content="https://dropyk.syvyj.dev/assets/social-en.png">
 <meta property="og:url" content="https://dropyk.syvyj.dev/">
-<meta name="theme-color" content="#12141F">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#ECE9FA">
 <link rel="icon" type="image/png" sizes="32x32" href="assets/icon-32.png">
 <link rel="apple-touch-icon" href="assets/icon-180.png">
 <link rel="preload" href="fonts/manrope-latin.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="style.css?v=1ff53740">
+<link rel="stylesheet" href="style.css?v=b90a8333">
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4C8DFF"/><stop offset="1" stop-color="#7A4CF0"/></linearGradient>
+    <symbol id="drop" viewBox="282 180 460 635">
+      <path fill="url(#g)" d="M512 194C572 304 727 424 727 584A215 215 0 0 1 297 584C297 424 452 304 512 194Z"/>
+      <path d="M512 464V684M417 589L512 684L607 589" fill="none" stroke="#fff" stroke-width="46" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+  </defs>
+</svg>
 
 <header class="nav">
   <a class="brand" href="" aria-label="Dropyk">
@@ -28,8 +39,8 @@
   </a>
   <nav aria-label="Main">
     <a href="#how">How it works</a>
-    <a href="#where">Where files go</a>
-    <a href="#support">Support</a>
+    <a href="#install">Install</a>
+    <a href="https://github.com/Syvyj/dropyk-android">GitHub</a>
   </nav>
   <div class="nav-tools">
     <a class="lang" href="uk/" hreflang="uk" lang="uk">UA</a>
@@ -37,78 +48,99 @@
   </div>
 </header>
 
-<svg width="0" height="0" style="position:absolute" aria-hidden="true">
-  <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4C8DFF"/><stop offset="1" stop-color="#7A4CF2"/></linearGradient>
-    <symbol id="drop" viewBox="282 180 460 635">
-      <path fill="url(#g)" d="M512 194C572 304 727 424 727 584A215 215 0 0 1 297 584C297 424 452 304 512 194Z"/>
-      <path d="M512 464V684M417 589L512 684L607 589" fill="none" stroke="#fff" stroke-width="46" stroke-linecap="round" stroke-linejoin="round"/>
-    </symbol>
-  </defs>
-</svg>
-
 <main id="main">
 
 <section class="hero" aria-labelledby="hero-title">
   <div class="hero-copy">
-    <p class="eyebrow">For Android TV and Google TV</p>
-    <h1 id="hero-title">From your phone to the TV <em>in one scan.</em></h1>
-    <p class="lead">Open Dropyk on the TV, point your phone's camera at the code and pick files. Videos, photos, APKs and links go straight over your home Wi‑Fi — no app on the phone, no cloud, no account.</p>
+    <p class="pill">For Android TV and Google TV</p>
+    <h1 id="hero-title">From your phone to the TV — in one scan.</h1>
+    <p class="lead">Photos, videos, files and links over your home network. No account and no app on the phone.</p>
     <div class="cta">
-      <a class="btn" href="https://github.com/Syvyj/dropyk-android/releases/latest/download/dropyk.apk">Download the APK</a>
-      <a class="btn btn-ghost" href="https://github.com/Syvyj/dropyk-android">Source on GitHub</a>
+      <a class="btn" href="https://github.com/Syvyj/dropyk-android/releases/latest/download/dropyk.apk">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 19h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Download the APK
+      </a>
+      <a class="text-link" href="#install">How to install<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
     </div>
-    <ul class="facts" aria-label="At a glance">
-      <li>Android 7.0+</li><li>~1 MB</li><li>GPL-3.0</li><li>No account</li><li>No cloud</li>
-    </ul>
   </div>
-  <div class="hero-shot">
-    <img class="tv" src="assets/en-tv-waiting.webp" alt="Dropyk on a TV: a QR code and two steps — scan the code, choose files" width="1440" height="810" fetchpriority="high">
-    <img class="phone" src="assets/en-phone.webp" alt="The page on the phone: Choose files, Downloads or By type, Or a link" width="666" height="1000">
+  <div class="devices">
+    <figure class="tv">
+      <div class="tv-screen"><img src="assets/en-tv-waiting.webp" alt="Dropyk on a TV: Dropyk / Send to TV, a QR code, two steps and the fallback address" width="1440" height="810" fetchpriority="high"></div>
+      <div class="tv-stand" aria-hidden="true"></div>
+    </figure>
+    <figure class="phone">
+      <img src="assets/en-phone.webp" alt="The page on the phone: Choose files, free space on the TV, Downloads or By type, a link field and Support the author" width="780" height="1440">
+    </figure>
   </div>
 </section>
 
+<ul class="strip" aria-label="At a glance">
+  <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 9a14 14 0 0 1 19 0M5.5 12.5a9.5 9.5 0 0 1 13 0M8.5 16a5 5 0 0 1 7 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="19.2" r="1.4" fill="currentColor"/></svg>No cloud</li>
+  <li><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 20c.8-3.8 3.6-6 7-6 1.4 0 2.6.3 3.6.9M16 16l5 5m0-5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>No account</li>
+  <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 7-5 5 5 5m8-10 5 5-5 5M14 4l-4 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Open source, GPL-3.0</li>
+</ul>
+
 <section class="how" id="how" aria-labelledby="how-title">
-  <p class="eyebrow">How it works</p>
-  <h2 id="how-title">Three steps, <em>one remote.</em></h2>
+  <h2 id="how-title">How it works</h2>
   <ol class="steps">
     <li>
-      <img src="assets/en-tv-waiting.webp" alt="" width="1440" height="810" loading="lazy">
-      <h3>1. Scan</h3>
-      <p>Open Dropyk on the TV. The code leads your phone to a page the TV serves itself. Bookmark it — it keeps working.</p>
+      <span class="num" aria-hidden="true">1</span>
+      <svg class="icon" viewBox="0 0 64 56" aria-hidden="true"><rect x="3" y="4" width="58" height="38" rx="5" fill="none" stroke="currentColor" stroke-width="3"/><path d="M20 52h24M26 42l-2 10M38 42l2 10" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><use href="#drop" x="24" y="11" width="16" height="22"/></svg>
+      <div><h3>Open</h3><p>Start Dropyk on the TV. You'll see a QR code.</p></div>
     </li>
     <li>
-      <img src="assets/en-tv-receiving.webp" alt="" width="1440" height="810" loading="lazy">
-      <h3>2. Send</h3>
-      <p>Pick one file or a hundred. They go one by one, straight to the TV's storage — a 4 GB film never passes through its memory.</p>
+      <span class="num" aria-hidden="true">2</span>
+      <svg class="icon" viewBox="0 0 64 56" aria-hidden="true"><path d="M8 16V8h8M48 8h8v8M56 40v8h-8M16 48H8v-8" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><rect x="18" y="14" width="11" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="3"/><rect x="35" y="14" width="11" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="3"/><rect x="18" y="31" width="11" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="3"/><path d="M36 32h4v4h-4zM42 38h4v4h-4zM36 40h2" fill="currentColor" stroke="currentColor" stroke-width="2"/></svg>
+      <div><h3>Scan</h3><p>Point the phone's camera at the code. A page from the TV opens — bookmark it if you like.</p></div>
     </li>
     <li>
-      <img src="assets/en-tv-received.webp" alt="" width="1440" height="810" loading="lazy">
-      <h3>3. Press OK</h3>
-      <p>The TV offers what to do: a video plays, an APK installs, a photo shows on screen, a link opens.</p>
+      <span class="num" aria-hidden="true">3</span>
+      <svg class="icon" viewBox="0 0 64 56" aria-hidden="true"><rect x="4" y="6" width="38" height="30" rx="4" fill="none" stroke="currentColor" stroke-width="3"/><path d="m8 32 10-10 8 8 5-5 7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><rect x="22" y="20" width="38" height="30" rx="4" fill="#fff" stroke="currentColor" stroke-width="3"/><path d="M37 28v14l11-7z" fill="url(#g)"/></svg>
+      <div><h3>Send</h3><p>Choose files or paste a link — they appear on the TV right away.</p></div>
     </li>
   </ol>
 </section>
 
-<section class="where" id="where" aria-labelledby="where-title">
-  <div>
-    <p class="eyebrow">Where files go</p>
-    <h2 id="where-title">Your choice, <em>on the phone.</em></h2>
-  </div>
-  <div class="cards">
-    <div class="card">
-      <h3>Downloads</h3>
-      <p>Everything in <code>Download/Dropyk</code>. Any file manager finds it.</p>
+<section class="features" aria-labelledby="features-title">
+  <h2 id="features-title">What it does</h2>
+  <div class="feature">
+    <img src="assets/en-tv-receiving.webp" alt="The TV receiving a 250 MB video with a progress bar" width="1440" height="810" loading="lazy">
+    <div>
+      <h3>Big files, straight to disk</h3>
+      <p>Pick one file or a hundred; they go one by one. A 4 GB film never passes through the TV's memory, and the page checks free space first.</p>
     </div>
-    <div class="card">
-      <h3>By type</h3>
-      <p>Videos in <code>Movies/Dropyk</code>, photos in <code>Pictures/Dropyk</code>, music in <code>Music/Dropyk</code> — where players and galleries look first.</p>
+  </div>
+  <div class="feature">
+    <img src="assets/en-tv-received-video.webp" alt="A received video with Watch and Done buttons and the folder it was saved to" width="1440" height="810" loading="lazy">
+    <div>
+      <h3>One press with the remote</h3>
+      <p>The TV offers what to do: a video plays, an APK installs, a photo shows on screen, a link opens.</p>
+    </div>
+  </div>
+  <div class="feature">
+    <div class="where">
+      <div class="where-card"><b>Downloads</b><span>Everything in <code>Download/Dropyk</code>.</span></div>
+      <div class="where-card"><b>By type</b><span>Videos in <code>Movies/Dropyk</code>, photos in <code>Pictures/Dropyk</code>, music in <code>Music/Dropyk</code>, the rest in <code>Download/Dropyk</code>.</span></div>
+    </div>
+    <div>
+      <h3>You choose where files go</h3>
+      <p>Switch it on the phone page; the phone remembers. Sorted by type, players and galleries find files where they look first.</p>
     </div>
   </div>
 </section>
 
+<section class="install" id="install" aria-labelledby="install-title">
+  <h2 id="install-title">Install</h2>
+  <ol>
+    <li><b>Download</b> <a href="https://github.com/Syvyj/dropyk-android/releases/latest/download/dropyk.apk">dropyk.apk</a>.</li>
+    <li><b>Copy it to the TV</b> with the Downloader app, a USB stick, or <code>adb install dropyk.apk</code>.</li>
+    <li><b>Allow and open.</b> When the TV asks, allow installing from that source, then open Dropyk from the app list.</li>
+  </ol>
+  <p class="small">Android 7.0 or newer. On Android 10+ no storage permission is needed.</p>
+</section>
+
 <section class="private" aria-labelledby="private-title">
-  <h2 id="private-title">Nothing leaves <em>your home.</em></h2>
+  <h2 id="private-title">Privacy</h2>
   <ul>
     <li>Files go from the phone to the TV over your own network. No server in between, nothing uploaded anywhere.</li>
     <li>The page address carries a secret key, so only someone who saw the code can send.</li>
@@ -117,35 +149,28 @@
 </section>
 
 <section class="next" aria-labelledby="next-title">
-  <p class="eyebrow">Coming next</p>
-  <h2 id="next-title">One drop point, <em>from anything.</em></h2>
-  <p class="lead">Today you send from any phone or laptop with a browser. Planned: the TV in the Quick Share menu of Android phones, sending from a Mac with Dropyk for Mac, and a share-sheet shortcut for iPhone.</p>
-</section>
-
-<section class="install" id="install" aria-labelledby="install-title">
-  <h2 id="install-title">Install</h2>
-  <ol>
-    <li>Download <a href="https://github.com/Syvyj/dropyk-android/releases/latest/download/dropyk.apk">dropyk.apk</a>.</li>
-    <li>Get it onto the TV: the Downloader app, a USB stick, or <code>adb install dropyk.apk</code>.</li>
-    <li>Allow installing from that source when the TV asks, then open Dropyk from the app list.</li>
-  </ol>
+  <h2 id="next-title">Planned</h2>
+  <p>Today you send from any phone or laptop with a browser. Planned: the TV in the Quick Share menu of Android phones, sending from a Mac with Dropyk for Mac, and a share-sheet shortcut for iPhone.</p>
 </section>
 
 <section class="support" id="support" aria-labelledby="support-title">
-  <h2 id="support-title">Support <em>Dropyk.</em></h2>
-  <p class="lead">Dropyk is free and will stay free. If it saved you a cable or a cloud upload, a coffee helps.</p>
-  <div class="gives">
+  <img src="assets/en-tv-support.webp" alt="The support screen on the TV with three QR codes" width="1440" height="810" loading="lazy">
+  <div>
+    <h2 id="support-title">Support the author</h2>
+    <p>Dropyk is free and will stay free. The same links are on the TV's support screen as QR codes.</p>
+    <div class="gives">
 <a class="give" href="https://ko-fi.com/syvyj" target="_blank" rel="noopener"><b>Ko-fi</b><small>Card or PayPal</small><span aria-hidden="true">↗</span></a>
 <a class="give" href="https://buymeacoffee.com/syvyj" target="_blank" rel="noopener"><b>Buy Me a Coffee</b><small>A coffee, any amount</small><span aria-hidden="true">↗</span></a>
 <a class="give" href="https://send.monobank.ua/jar/5juJPj142b" target="_blank" rel="noopener"><b>Monobank jar</b><small>Card, Apple Pay, Google Pay</small><span aria-hidden="true">↗</span></a>
+    </div>
   </div>
 </section>
 
 </main>
 
 <footer class="footer">
-  <p>Dropyk · GPL-3.0 · <a href="https://github.com/Syvyj/dropyk-android">GitHub</a></p>
-  <p>Also by the author: <a href="https://likhtar.syvyj.dev/">Likhtar Home</a> · <a href="https://shotleaf.syvyj.dev/">Shotleaf</a></p>
+  <p><a class="brand" href=""><svg aria-hidden="true"><use href="#drop"/></svg><span>Dropyk</span></a></p>
+  <p>GPL-3.0 · <a href="https://github.com/Syvyj/dropyk-android">GitHub</a> · Also by the author: <a href="https://likhtar.syvyj.dev/">Likhtar Home</a>, <a href="https://shotleaf.syvyj.dev/">Shotleaf</a></p>
 </footer>
 </body>
 </html>

@@ -3,23 +3,34 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Dropyk: з телефона на телевізор одним скануванням</title>
+<title>Dropyk — надішліть на телевізор</title>
 <meta name="description" content="Безкоштовний застосунок з відкритим кодом для Android TV і Google TV. Відкрийте, проскануйте код телефоном і надсилайте відео, фото, APK та посилання через домашній Wi‑Fi. Без застосунку на телефоні, без хмари й акаунта.">
 <link rel="canonical" href="https://dropyk.syvyj.dev/uk/">
 <link rel="alternate" hreflang="en" href="https://dropyk.syvyj.dev/">
 <link rel="alternate" hreflang="uk" href="https://dropyk.syvyj.dev/uk/">
 <meta property="og:title" content="Dropyk">
-<meta property="og:description" content="З телефона на телевізор одним скануванням.">
-<meta property="og:image" content="https://dropyk.syvyj.dev/assets/uk-tv-waiting.webp">
+<meta property="og:description" content="З телефона на телевізор — одним скануванням.">
+<meta property="og:image" content="https://dropyk.syvyj.dev/assets/social-uk.png">
 <meta property="og:url" content="https://dropyk.syvyj.dev/uk/">
-<meta name="theme-color" content="#12141F">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#ECE9FA">
 <link rel="icon" type="image/png" sizes="32x32" href="../assets/icon-32.png">
 <link rel="apple-touch-icon" href="../assets/icon-180.png">
 <link rel="preload" href="../fonts/manrope-latin.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="../style.css?v=1ff53740">
+<link rel="stylesheet" href="../style.css?v=b90a8333">
 </head>
 <body>
 <a class="skip" href="#main">Перейти до змісту</a>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4C8DFF"/><stop offset="1" stop-color="#7A4CF0"/></linearGradient>
+    <symbol id="drop" viewBox="282 180 460 635">
+      <path fill="url(#g)" d="M512 194C572 304 727 424 727 584A215 215 0 0 1 297 584C297 424 452 304 512 194Z"/>
+      <path d="M512 464V684M417 589L512 684L607 589" fill="none" stroke="#fff" stroke-width="46" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+  </defs>
+</svg>
 
 <header class="nav">
   <a class="brand" href="../uk/" aria-label="Dropyk">
@@ -28,8 +39,8 @@
   </a>
   <nav aria-label="Головне">
     <a href="#how">Як це працює</a>
-    <a href="#where">Куди лягають файли</a>
-    <a href="#support">Підтримати</a>
+    <a href="#install">Встановлення</a>
+    <a href="https://github.com/Syvyj/dropyk-android">GitHub</a>
   </nav>
   <div class="nav-tools">
     <a class="lang" href="../" hreflang="en" lang="en">EN</a>
@@ -37,78 +48,99 @@
   </div>
 </header>
 
-<svg width="0" height="0" style="position:absolute" aria-hidden="true">
-  <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4C8DFF"/><stop offset="1" stop-color="#7A4CF2"/></linearGradient>
-    <symbol id="drop" viewBox="282 180 460 635">
-      <path fill="url(#g)" d="M512 194C572 304 727 424 727 584A215 215 0 0 1 297 584C297 424 452 304 512 194Z"/>
-      <path d="M512 464V684M417 589L512 684L607 589" fill="none" stroke="#fff" stroke-width="46" stroke-linecap="round" stroke-linejoin="round"/>
-    </symbol>
-  </defs>
-</svg>
-
 <main id="main">
 
 <section class="hero" aria-labelledby="hero-title">
   <div class="hero-copy">
-    <p class="eyebrow">Для Android TV і Google TV</p>
-    <h1 id="hero-title">З телефона на телевізор <em>одним скануванням.</em></h1>
-    <p class="lead">Відкрийте Dropyk на телевізорі, наведіть камеру телефона на код і виберіть файли. Відео, фото, APK та посилання йдуть просто через домашній Wi‑Fi — без застосунку на телефоні, без хмари й акаунта.</p>
+    <p class="pill">Для Android TV і Google TV</p>
+    <h1 id="hero-title">З телефона на телевізор — одним скануванням.</h1>
+    <p class="lead">Фото, відео, файли й посилання через домашню мережу. Без акаунта і застосунку на телефоні.</p>
     <div class="cta">
-      <a class="btn" href="https://github.com/Syvyj/dropyk-android/releases/latest/download/dropyk.apk">Завантажити APK</a>
-      <a class="btn btn-ghost" href="https://github.com/Syvyj/dropyk-android">Код на GitHub</a>
+      <a class="btn" href="https://github.com/Syvyj/dropyk-android/releases/latest/download/dropyk.apk">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 19h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Завантажити APK
+      </a>
+      <a class="text-link" href="#install">Як встановити<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
     </div>
-    <ul class="facts" aria-label="Коротко">
-      <li>Android 7.0+</li><li>~1 МБ</li><li>GPL-3.0</li><li>Без акаунта</li><li>Без хмари</li>
-    </ul>
   </div>
-  <div class="hero-shot">
-    <img class="tv" src="../assets/uk-tv-waiting.webp" alt="Dropyk на телевізорі: QR-код і два кроки — проскануйте код, виберіть файли" width="1440" height="810" fetchpriority="high">
-    <img class="phone" src="../assets/uk-phone.webp" alt="Сторінка на телефоні: Вибрати файли, У завантаження чи За типом, Або посилання" width="666" height="1000">
+  <div class="devices">
+    <figure class="tv">
+      <div class="tv-screen"><img src="../assets/uk-tv-waiting.webp" alt="Dropyk на телевізорі: Dropyk / Надішліть на телевізор, QR-код, два кроки й запасна адреса" width="1440" height="810" fetchpriority="high"></div>
+      <div class="tv-stand" aria-hidden="true"></div>
+    </figure>
+    <figure class="phone">
+      <img src="../assets/uk-phone.webp" alt="Сторінка на телефоні: Вибрати файли, вільне місце на телевізорі, У завантаження чи За типом, поле для посилання й Підтримати автора" width="780" height="1440">
+    </figure>
   </div>
 </section>
 
+<ul class="strip" aria-label="Коротко">
+  <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 9a14 14 0 0 1 19 0M5.5 12.5a9.5 9.5 0 0 1 13 0M8.5 16a5 5 0 0 1 7 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="19.2" r="1.4" fill="currentColor"/></svg>Без хмари</li>
+  <li><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 20c.8-3.8 3.6-6 7-6 1.4 0 2.6.3 3.6.9M16 16l5 5m0-5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Без акаунта</li>
+  <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 7-5 5 5 5m8-10 5 5-5 5M14 4l-4 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Відкритий код, GPL-3.0</li>
+</ul>
+
 <section class="how" id="how" aria-labelledby="how-title">
-  <p class="eyebrow">Як це працює</p>
-  <h2 id="how-title">Три кроки, <em>один пульт.</em></h2>
+  <h2 id="how-title">Як це працює</h2>
   <ol class="steps">
     <li>
-      <img src="../assets/uk-tv-waiting.webp" alt="" width="1440" height="810" loading="lazy">
-      <h3>1. Скануйте</h3>
-      <p>Відкрийте Dropyk на телевізорі. Код веде телефон на сторінку, яку віддає сам телевізор. Додайте її в закладки — вона й далі працюватиме.</p>
+      <span class="num" aria-hidden="true">1</span>
+      <svg class="icon" viewBox="0 0 64 56" aria-hidden="true"><rect x="3" y="4" width="58" height="38" rx="5" fill="none" stroke="currentColor" stroke-width="3"/><path d="M20 52h24M26 42l-2 10M38 42l2 10" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><use href="#drop" x="24" y="11" width="16" height="22"/></svg>
+      <div><h3>Відкрийте</h3><p>Запустіть Dropyk на телевізорі. Ви побачите QR-код.</p></div>
     </li>
     <li>
-      <img src="../assets/uk-tv-receiving.webp" alt="" width="1440" height="810" loading="lazy">
-      <h3>2. Надішліть</h3>
-      <p>Виберіть один файл чи сотню. Вони йдуть по черзі, одразу на диск телевізора — фільм на 4 ГБ не проходить через його пам'ять.</p>
+      <span class="num" aria-hidden="true">2</span>
+      <svg class="icon" viewBox="0 0 64 56" aria-hidden="true"><path d="M8 16V8h8M48 8h8v8M56 40v8h-8M16 48H8v-8" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><rect x="18" y="14" width="11" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="3"/><rect x="35" y="14" width="11" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="3"/><rect x="18" y="31" width="11" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="3"/><path d="M36 32h4v4h-4zM42 38h4v4h-4zM36 40h2" fill="currentColor" stroke="currentColor" stroke-width="2"/></svg>
+      <div><h3>Скануйте</h3><p>Наведіть камеру телефона на код. Відкриється сторінка з телевізора — її можна зберегти в закладки.</p></div>
     </li>
     <li>
-      <img src="../assets/uk-tv-received.webp" alt="" width="1440" height="810" loading="lazy">
-      <h3>3. Натисніть OK</h3>
-      <p>Телевізор сам пропонує, що робити: відео — дивитись, APK — встановити, фото — показати, посилання — відкрити.</p>
+      <span class="num" aria-hidden="true">3</span>
+      <svg class="icon" viewBox="0 0 64 56" aria-hidden="true"><rect x="4" y="6" width="38" height="30" rx="4" fill="none" stroke="currentColor" stroke-width="3"/><path d="m8 32 10-10 8 8 5-5 7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><rect x="22" y="20" width="38" height="30" rx="4" fill="#fff" stroke="currentColor" stroke-width="3"/><path d="M37 28v14l11-7z" fill="url(#g)"/></svg>
+      <div><h3>Надішліть</h3><p>Виберіть файли або вставте посилання — вони одразу з'являться на телевізорі.</p></div>
     </li>
   </ol>
 </section>
 
-<section class="where" id="where" aria-labelledby="where-title">
-  <div>
-    <p class="eyebrow">Куди лягають файли</p>
-    <h2 id="where-title">Обираєте <em>на телефоні.</em></h2>
-  </div>
-  <div class="cards">
-    <div class="card">
-      <h3>У завантаження</h3>
-      <p>Усе в <code>Download/Dropyk</code>. Знайде будь-який файловий менеджер.</p>
+<section class="features" aria-labelledby="features-title">
+  <h2 id="features-title">Що вміє</h2>
+  <div class="feature">
+    <img src="../assets/uk-tv-receiving.webp" alt="Телевізор приймає відео на 250 МБ, видно смугу прогресу" width="1440" height="810" loading="lazy">
+    <div>
+      <h3>Великі файли — одразу на диск</h3>
+      <p>Виберіть один файл чи сотню — вони йдуть по черзі. Фільм на 4 ГБ не проходить через пам'ять телевізора, а сторінка заздалегідь перевіряє вільне місце.</p>
     </div>
-    <div class="card">
-      <h3>За типом</h3>
-      <p>Відео в <code>Movies/Dropyk</code>, фото в <code>Pictures/Dropyk</code>, музика в <code>Music/Dropyk</code> — там, де їх насамперед шукають плеєри й галереї.</p>
+  </div>
+  <div class="feature">
+    <img src="../assets/uk-tv-received-video.webp" alt="Отримане відео з кнопками Дивитись і Готово та текою, куди його збережено" width="1440" height="810" loading="lazy">
+    <div>
+      <h3>Одне натискання пультом</h3>
+      <p>Телевізор сам пропонує дію: відео — дивитись, APK — встановити, фото — показати на екрані, посилання — відкрити.</p>
+    </div>
+  </div>
+  <div class="feature">
+    <div class="where">
+      <div class="where-card"><b>У завантаження</b><span>Усе в <code>Download/Dropyk</code>.</span></div>
+      <div class="where-card"><b>За типом</b><span>Відео в <code>Movies/Dropyk</code>, фото в <code>Pictures/Dropyk</code>, музика в <code>Music/Dropyk</code>, решта в <code>Download/Dropyk</code>.</span></div>
+    </div>
+    <div>
+      <h3>Ви обираєте, куди лягають файли</h3>
+      <p>Перемикач на сторінці телефона, і телефон його запам'ятовує. «За типом» — плеєри й галереї знаходять файли там, де шукають насамперед.</p>
     </div>
   </div>
 </section>
 
+<section class="install" id="install" aria-labelledby="install-title">
+  <h2 id="install-title">Встановлення</h2>
+  <ol>
+    <li><b>Завантажте</b> <a href="https://github.com/Syvyj/dropyk-android/releases/latest/download/dropyk.apk">dropyk.apk</a>.</li>
+    <li><b>Перенесіть на телевізор</b> застосунком Downloader, флешкою або командою <code>adb install dropyk.apk</code>.</li>
+    <li><b>Дозвольте й відкрийте.</b> Коли телевізор попросить, дозвольте встановлення з цього джерела, потім відкрийте Dropyk зі списку застосунків.</li>
+  </ol>
+  <p class="small">Android 7.0 або новіший. На Android 10+ дозвіл на доступ до пам'яті не потрібен.</p>
+</section>
+
 <section class="private" aria-labelledby="private-title">
-  <h2 id="private-title">Нічого не виходить <em>за межі дому.</em></h2>
+  <h2 id="private-title">Приватність</h2>
   <ul>
     <li>Файли йдуть з телефона на телевізор вашою власною мережею. Жодного сервера посередині, нічого нікуди не вивантажується.</li>
     <li>В адресі сторінки є секретний ключ, тож надіслати може лише той, хто бачив код.</li>
@@ -117,35 +149,28 @@
 </section>
 
 <section class="next" aria-labelledby="next-title">
-  <p class="eyebrow">Далі</p>
-  <h2 id="next-title">Одна точка прийому — <em>з будь-чого.</em></h2>
-  <p class="lead">Сьогодні надсилати можна з будь-якого телефона чи ноутбука з браузером. У планах: телевізор у меню Quick Share на Android-телефонах, надсилання з Mac через Dropyk для Mac і ярлик у меню «Поділитися» на iPhone.</p>
-</section>
-
-<section class="install" id="install" aria-labelledby="install-title">
-  <h2 id="install-title">Встановлення</h2>
-  <ol>
-    <li>Завантажте <a href="https://github.com/Syvyj/dropyk-android/releases/latest/download/dropyk.apk">dropyk.apk</a>.</li>
-    <li>Перенесіть на телевізор: застосунком Downloader, флешкою або командою <code>adb install dropyk.apk</code>.</li>
-    <li>Коли телевізор попросить, дозвольте встановлення з цього джерела, потім відкрийте Dropyk зі списку застосунків.</li>
-  </ol>
+  <h2 id="next-title">У планах</h2>
+  <p>Сьогодні надсилати можна з будь-якого телефона чи ноутбука з браузером. У планах: телевізор у меню Quick Share на Android-телефонах, надсилання з Mac через Dropyk для Mac і ярлик у меню «Поділитися» на iPhone.</p>
 </section>
 
 <section class="support" id="support" aria-labelledby="support-title">
-  <h2 id="support-title">Підтримати <em>Dropyk.</em></h2>
-  <p class="lead">Dropyk безкоштовний і таким лишиться. Якщо він зекономив вам кабель чи вивантаження в хмару — кава допоможе.</p>
-  <div class="gives">
+  <img src="../assets/uk-tv-support.webp" alt="Екран підтримки на телевізорі з трьома QR-кодами" width="1440" height="810" loading="lazy">
+  <div>
+    <h2 id="support-title">Підтримати автора</h2>
+    <p>Dropyk безкоштовний і таким лишиться. Ті самі посилання є на екрані підтримки в телевізорі у вигляді QR-кодів.</p>
+    <div class="gives">
 <a class="give" href="https://send.monobank.ua/jar/5juJPj142b" target="_blank" rel="noopener"><b>Банка Monobank</b><small>Картка, Apple Pay, Google Pay</small><span aria-hidden="true">↗</span></a>
 <a class="give" href="https://ko-fi.com/syvyj" target="_blank" rel="noopener"><b>Ko-fi</b><small>Картка чи PayPal</small><span aria-hidden="true">↗</span></a>
 <a class="give" href="https://buymeacoffee.com/syvyj" target="_blank" rel="noopener"><b>Buy Me a Coffee</b><small>Кава, будь-яка сума</small><span aria-hidden="true">↗</span></a>
+    </div>
   </div>
 </section>
 
 </main>
 
 <footer class="footer">
-  <p>Dropyk · GPL-3.0 · <a href="https://github.com/Syvyj/dropyk-android">GitHub</a></p>
-  <p>Також від автора: <a href="https://likhtar.syvyj.dev/">Likhtar Home</a> · <a href="https://shotleaf.syvyj.dev/">Shotleaf</a></p>
+  <p><a class="brand" href="../uk/"><svg aria-hidden="true"><use href="#drop"/></svg><span>Dropyk</span></a></p>
+  <p>GPL-3.0 · <a href="https://github.com/Syvyj/dropyk-android">GitHub</a> · Також від автора: <a href="https://likhtar.syvyj.dev/">Likhtar Home</a>, <a href="https://shotleaf.syvyj.dev/">Shotleaf</a></p>
 </footer>
 </body>
 </html>

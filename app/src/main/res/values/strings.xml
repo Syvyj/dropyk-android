@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Dropyk</string>
+    <string name="app_name" translatable="false">Dropyk</string>
     <string name="tagline">Files and links from your phone to the TV — no app on the phone</string>
     <string name="step1">1. Scan the code with your phone camera</string>
     <string name="step2">2. Choose files on the page that opens</string>
