@@ -100,6 +100,14 @@ main > section { max-width: var(--max); margin: 0 auto; padding: clamp(64px, 8vw
 .feature h3 { font-size: 26px; margin-bottom: 10px; }
 .feature p { color: var(--muted); max-width: 46ch; }
 .where { display: grid; gap: 12px; }
+/* The TV's Quick Share prompt, drawn in the page rather than screenshotted: names and PIN are examples. */
+.qs-card { display: grid; gap: 6px; background: var(--card); border-radius: 22px; padding: 28px 30px; box-shadow: 0 18px 44px rgba(40, 36, 100, .14); }
+.qs-from { color: var(--muted); font-size: 15px; }
+.qs-card b { font-size: 22px; }
+.qs-card > span:nth-of-type(2) { color: var(--muted); }
+.qs-buttons { display: flex; gap: 12px; margin-top: 12px; }
+.qs-buttons i { font-style: normal; font-weight: 700; color: var(--accent); background: #fff; border: 1px solid var(--line); border-radius: 22px; padding: 8px 18px; font-size: 15px; }
+.qs-buttons i.on { background: var(--blue); border-color: var(--blue); color: #fff; }
 .where-card { background: var(--card); border-radius: 18px; padding: 20px 22px; display: grid; gap: 6px; }
 .where-card span { color: var(--muted); }
 

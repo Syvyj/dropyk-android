@@ -2,7 +2,7 @@
 
 **English** · [Українська](README.uk.md)
 
-Send files and links from your phone to an Android TV or Google TV over your home network. No phone app, no account, no cloud.
+Send files and links from your phone to an Android TV or Google TV over your home network: from any phone through a QR code and the browser, or from an Android phone through Quick Share. No phone app, no account, no cloud.
 
 **[Download APK](https://github.com/Syvyj/dropyk-android/releases/latest/download/dropyk.apk)** · **[Website](https://dropyk.syvyj.dev/)** · **[Installation](#installation)**
 
@@ -16,9 +16,12 @@ For receiving on a Mac from an Android phone, see [Dropyk for Mac](https://githu
 2. **Scan** the code with the phone's camera. A page served by the TV itself opens; you can bookmark it.
 3. **Send** — choose files or paste a link, and they appear on the TV.
 
+From an Android phone it's shorter: with Dropyk open on the TV, **Share → Quick Share** and pick the TV. The TV asks to accept and shows the PIN the phone shows.
+
 ## Features
 
 - **Photos, videos, APKs, any file** — one or a hundred at a time, sent one by one. Bytes go straight to the TV's storage, so a 4 GB film never passes through its memory; the page checks free space first. On a budget Google TV box over Wi‑Fi, files arrive at about 12–20 MB/s.
+- **Quick Share** — the TV shows up in the Share sheet of Android phones on the same Wi‑Fi, under its own name. Files, links and text; the TV asks before accepting.
 - **Links** — paste one on the phone and open it on the TV.
 - **One press with the remote** — a video plays, an APK installs, a photo shows on screen, a link opens.
 - **You choose where files go** — *Downloads* puts everything in `Download/Dropyk`; *By type* puts videos in `Movies/Dropyk`, photos in `Pictures/Dropyk`, music in `Music/Dropyk` and the rest in `Download/Dropyk`. The phone remembers the choice.
@@ -41,6 +44,7 @@ No storage permission is needed on Android 10+. On Android 7–9 files go to the
 
 - Files go from the phone to the TV over your own network. There is no server in between and nothing is uploaded anywhere.
 - The page address carries a secret key, so only someone who saw the code can send.
+- Quick Share is encrypted end to end (the same UKEY2 key exchange phones use), and the TV asks before every transfer.
 - The TV listens only while Dropyk is open. No account, no ads, no tracking.
 
 
@@ -57,6 +61,8 @@ The site lives in [`web/`](web/): `python3 web/build.py` writes the English and 
 ## License
 
 [GPL-3.0](LICENSE).
+
+The Quick Share receiver is a Kotlin port of the receiving side of [NearDrop](https://github.com/grishka/NearDrop) by Grishka (Unlicense), who reverse engineered the protocol. The `.proto` files in `app/src/main/proto` are © Google LLC, Apache-2.0.
 
 ## Support the author
 
