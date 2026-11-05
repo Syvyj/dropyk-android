@@ -14,6 +14,17 @@ import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.keyframes
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -94,8 +105,14 @@ private fun DropScreen() {
 
     Box(Modifier.fillMaxSize().background(Bg).padding(horizontal = 64.dp, vertical = 48.dp)) {
         Column(Modifier.align(Alignment.Center).width(820.dp)) {
-            Text("Dropyk", color = TextPrimary, fontSize = 40.sp, fontWeight = FontWeight.SemiBold)
-            Text(stringResource(R.string.tagline), color = TextMuted, fontSize = 18.sp, modifier = Modifier.padding(top = 4.dp, bottom = 28.dp))
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(20.dp)) {
+                Droplet(receiving = state is DropState.Receiving)
+                Column {
+                    Text("Dropyk", color = TextPrimary, fontSize = 40.sp, fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.tagline), color = TextMuted, fontSize = 18.sp, modifier = Modifier.padding(top = 4.dp))
+                }
+            }
+            Box(Modifier.height(28.dp))
 
             val showQr = state is DropState.Waiting || state is DropState.Connected || state is DropState.Failed
             if (url == null) {
@@ -174,6 +191,54 @@ private fun Action(label: String, focus: FocusRequester?, onClick: () -> Unit) {
         modifier = if (focus != null) Modifier.focusRequester(focus) else Modifier,
         colors = ButtonDefaults.colors(containerColor = Card, contentColor = TextPrimary, focusedContainerColor = Blue, focusedContentColor = Color.White),
     ) { Text(label, fontSize = 18.sp) }
+}
+
+/**
+ * The app icon's droplet. Idle it breathes slowly; while a file is coming in it gives one short
+ * pulse a second and holds still in between — every frame drawn during a transfer costs Wi-Fi
+ * throughput on cheap boxes (see PROGRESS_EVERY_MS in Drop).
+ */
+@Composable
+private fun Droplet(receiving: Boolean) {
+    val transition = rememberInfiniteTransition(label = "droplet")
+    val scale by transition.animateFloat(
+        initialValue = 1f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            if (receiving) keyframes {
+                durationMillis = 1000
+                1f at 0
+                1.12f at 150
+                1f at 350
+                1f at 1000
+            } else keyframes {
+                durationMillis = 2800
+                1f at 0 using FastOutSlowInEasing
+                0.9f at 1400 using FastOutSlowInEasing
+                1f at 2800
+            },
+        ),
+        label = "scale",
+    )
+    val gradient = remember { Brush.verticalGradient(listOf(Blue, Violet)) }
+    Canvas(Modifier.size(width = 52.dp, height = 72.dp).graphicsLayer { scaleX = scale; scaleY = scale }) {
+        // The icon's droplet, drawn in its 1024-unit space and cropped to x 282..742, y 180..815.
+        val k = size.height / 635f
+        fun p(x: Float, y: Float) = Offset((x - 282f) * k, (y - 180f) * k)
+        val drop = Path().apply {
+            moveTo(p(512f, 194f).x, p(512f, 194f).y)
+            cubicTo(p(572f, 304f).x, p(572f, 304f).y, p(727f, 424f).x, p(727f, 424f).y, p(727f, 584f).x, p(727f, 584f).y)
+            arcTo(Rect(p(297f, 369f), p(727f, 799f)), 0f, 180f, false)
+            cubicTo(p(297f, 424f).x, p(297f, 424f).y, p(452f, 304f).x, p(452f, 304f).y, p(512f, 194f).x, p(512f, 194f).y)
+            close()
+        }
+        drawPath(drop, gradient)
+        val arrow = Path().apply {
+            moveTo(p(512f, 464f).x, p(512f, 464f).y); lineTo(p(512f, 684f).x, p(512f, 684f).y)
+            moveTo(p(417f, 589f).x, p(417f, 589f).y); lineTo(p(512f, 684f).x, p(512f, 684f).y); lineTo(p(607f, 589f).x, p(607f, 589f).y)
+        }
+        drawPath(arrow, Color.White, style = Stroke(width = 46f * k, cap = StrokeCap.Round, join = StrokeJoin.Round))
+    }
 }
 
 /** Photo preview, downsampled: a 48 MP shot decoded as is would eat a TV box's memory. */
