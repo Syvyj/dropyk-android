@@ -12,7 +12,7 @@ REPO = "https://github.com/Syvyj/dropyk-android"
 # The newest release's APK; the release must carry an asset with exactly this name.
 DOWNLOAD = REPO + "/releases/latest/download/dropyk.apk"
 MAC_REPO = "https://github.com/Syvyj/dropyk-mac"
-MAC_DOWNLOAD = MAC_REPO + "/releases/latest/download/Dropyk.zip"
+MAC_DOWNLOAD = MAC_REPO + "/releases/latest/download/Dropyk.dmg"
 
 # Donation links — the same as Likhtar's and the app's support screen. Monobank first in Ukrainian.
 DONATE = [
