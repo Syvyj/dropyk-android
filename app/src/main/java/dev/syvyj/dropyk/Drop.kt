@@ -142,7 +142,7 @@ object Drop {
         }
         try {
             var done = 0L
-            var shown = 0L
+            var shownAt = 0L
             (context.contentResolver.openOutputStream(target.uri) ?: error("no stream")).buffered(256 * 1024).use { sink ->
                 val buf = ByteArray(256 * 1024)
                 while (done < length) {
@@ -150,9 +150,11 @@ object Drop {
                     if (n < 0) break
                     sink.write(buf, 0, n)
                     done += n
-                    // Not on every chunk: each update redraws the TV screen.
-                    if (done - shown > length / 100 || done == length) {
-                        shown = done
+                    // A few redraws a second at most: on a cheap TV box every frame drawn during
+                    // a transfer cut Wi-Fi throughput from ~22 MB/s to ~1 MB/s (measured).
+                    val now = System.currentTimeMillis()
+                    if (now - shownAt >= PROGRESS_EVERY_MS || done == length) {
+                        shownAt = now
                         _state.value = DropState.Receiving(target.name, done, length)
                     }
                 }
@@ -248,6 +250,7 @@ object Drop {
     }
 
     private const val TAG = "Drop"
+    private const val PROGRESS_EVERY_MS = 500L
     private val PORTS = 8776..8780
     /** Leave the system 200 MB: a box filled to the brim slows down and can't update. */
     private const val MARGIN = 200L * 1024 * 1024
