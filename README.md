@@ -41,11 +41,6 @@ No storage permission is needed on Android 10+. On Android 7–9 files go to the
 - The page address carries a secret key, so only someone who saw the code can send.
 - The TV listens only while Dropyk is open. No account, no ads, no tracking.
 
-## Planned
-
-- The TV in the **Quick Share** menu of Android phones.
-- Sending from a Mac with **Dropyk for Mac**.
-- A share-sheet **shortcut for iPhone**.
 
 ## Building
 
