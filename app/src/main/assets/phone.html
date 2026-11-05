@@ -33,14 +33,39 @@
   .link input:focus { border-color:var(--blue); }
   .link button { border:1px solid var(--line); border-radius:12px; padding:0 16px; background:var(--card); color:var(--blue); font:inherit; font-weight:600; }
   .note { color:var(--muted); font-size:13px; margin-top:8px; min-height:18px; }
+  .brand { display:flex; align-items:center; gap:10px; margin-bottom:18px; font-size:19px; font-weight:650; }
+  .brand svg { width:26px; height:36px; flex:none; }
+  .seg { display:flex; gap:6px; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:4px; margin:16px 0 0; }
+  .seg button { flex:1; border:0; border-radius:10px; padding:10px 8px; background:transparent; color:var(--muted); font:inherit; font-size:14px; }
+  .seg button.on { background:var(--line); color:var(--text); font-weight:600; }
+  .where { color:var(--muted); font-size:13px; margin:8px 2px 0; }
+  .give { display:flex; align-items:center; justify-content:space-between; gap:10px; background:var(--card); border-radius:14px;
+          padding:13px 14px; margin-bottom:8px; color:var(--text); text-decoration:none; }
+  .give small { display:block; color:var(--muted); font-size:13px; }
+  .give span { color:var(--blue); font-size:18px; }
+  footer { margin-top:36px; }
+  footer p { color:var(--muted); font-size:13px; margin:0 0 10px; }
 </style>
 </head>
 <body>
 <main>
+  <div class="brand">
+    <svg viewBox="282 180 460 635" aria-hidden="true">
+      <defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4C8DFF"/><stop offset="1" stop-color="#7A4CF2"/></linearGradient></defs>
+      <path fill="url(#g)" d="M512 194C572 304 727 424 727 584A215 215 0 0 1 297 584C297 424 452 304 512 194Z"/>
+      <path d="M512 464V684M417 589L512 684L607 589" fill="none" stroke="#fff" stroke-width="46" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    Dropyk
+  </div>
   <h1 data-t="title"></h1>
   <p class="sub" data-t="sub"></p>
   <label class="pick"><span data-t="pick"></span><input id="files" type="file" multiple></label>
   <div class="free" id="free"></div>
+  <div class="seg" role="radiogroup">
+    <button type="button" data-to="downloads" data-t="toDownloads"></button>
+    <button type="button" data-to="sorted" data-t="toSorted"></button>
+  </div>
+  <div class="where" id="where"></div>
   <ul id="list"></ul>
   <h2 data-t="orLink"></h2>
   <form class="link" id="linkForm">
@@ -48,11 +73,21 @@
     <button type="submit" data-t="open"></button>
   </form>
   <div class="note" id="note"></div>
+  <footer>
+    <h2 data-t="support"></h2>
+    <p data-t="supportLead"></p>
+    <div id="give"></div>
+  </footer>
 </main>
 <script>
 const T = {
   en: {
-    title: 'Send to TV', sub: 'Videos, photos or APKs — the TV offers what to do with each. Everything goes to Downloads → Dropyk on the TV. You can bookmark this page.',
+    title: 'Send to TV', sub: 'Videos, photos or APKs — the TV offers what to do with each. You can bookmark this page.',
+    toDownloads: 'Downloads', toSorted: 'By type', whereDownloads: 'Everything goes to Download/Dropyk on the TV.',
+    whereSorted: 'Videos → Movies/Dropyk, photos → Pictures/Dropyk, music → Music/Dropyk, the rest → Download/Dropyk.',
+    support: 'Support the author', supportLead: 'Dropyk is free and will stay free.',
+    give: [['Ko-fi', 'https://ko-fi.com/syvyj', 'Card or PayPal'], ['Buy Me a Coffee', 'https://buymeacoffee.com/syvyj', 'A coffee, any amount'],
+           ['Monobank jar', 'https://send.monobank.ua/jar/5juJPj142b', 'Card, Apple Pay, Google Pay']],
     pick: 'Choose files', orLink: 'Or a link', open: 'Open', free: 'Free on TV: ', waiting: 'waiting', onTv: 'on TV',
     noSpace: 'not enough space', lost: 'connection lost', failed: 'error', needLink: 'Paste a link that starts with https://',
     linkOk: 'Done — confirm on the TV', linkFail: 'Could not send', gb: ' GB', mb: ' MB',
@@ -60,7 +95,12 @@ const T = {
               cant_create: 'TV could not create the file', unknown_size: 'unknown size', not_a_link: 'not a link' },
   },
   uk: {
-    title: 'Передати на телевізор', sub: 'Відео, фото чи APK — телевізор запропонує, що з ним зробити. Усе лягає в «Завантаження → Dropyk» на телевізорі. Цю сторінку можна зберегти в закладки.',
+    title: 'Передати на телевізор', sub: 'Відео, фото чи APK — телевізор запропонує, що з ним зробити. Цю сторінку можна зберегти в закладки.',
+    toDownloads: 'У завантаження', toSorted: 'За типом', whereDownloads: 'Усе лягає в Download/Dropyk на телевізорі.',
+    whereSorted: 'Відео → Movies/Dropyk, фото → Pictures/Dropyk, музика → Music/Dropyk, решта → Download/Dropyk.',
+    support: 'Підтримати автора', supportLead: 'Dropyk безкоштовний і таким лишиться.',
+    give: [['Банка Monobank', 'https://send.monobank.ua/jar/5juJPj142b', 'Картка, Apple Pay, Google Pay'],
+           ['Ko-fi', 'https://ko-fi.com/syvyj', 'Картка чи PayPal'], ['Buy Me a Coffee', 'https://buymeacoffee.com/syvyj', 'Кава, будь-яка сума']],
     pick: 'Вибрати файли', orLink: 'Або посилання', open: 'Відкрити', free: 'Вільно на телевізорі: ', waiting: 'чекає', onTv: 'на ТБ',
     noSpace: 'не вистачає місця', lost: 'зв\'язок обірвався', failed: 'помилка', needLink: 'Вставте посилання, що починається з https://',
     linkOk: 'Готово — підтвердіть на телевізорі', linkFail: 'Не вдалося передати', gb: ' ГБ', mb: ' МБ',
@@ -87,14 +127,18 @@ function send(file, li) {
   return new Promise((done) => {
     const pct = li.querySelector('.pct'), bar = li.querySelector('i');
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', 'upload?name=' + encodeURIComponent(file.name));
+    xhr.open('POST', 'upload?to=' + to + '&name=' + encodeURIComponent(file.name));
     xhr.upload.onprogress = (e) => {
       if (!e.lengthComputable) return;
       const p = Math.round(e.loaded / e.total * 100);
       bar.style.width = p + '%'; pct.textContent = p + '%';
     };
     xhr.onload = () => {
-      if (xhr.status === 200) { li.className = 'ok'; bar.style.width = '100%'; pct.textContent = t.onTv; }
+      if (xhr.status === 200) {
+        li.className = 'ok'; bar.style.width = '100%';
+        let folder = ''; try { folder = JSON.parse(xhr.responseText).folder || ''; } catch (_) {}
+        pct.textContent = folder ? t.onTv + ' · ' + folder : t.onTv;
+      }
       else { li.className = 'bad'; try { pct.textContent = t.errors[JSON.parse(xhr.responseText).error] || t.failed; } catch (_) { pct.textContent = t.failed; } }
       done();
     };
@@ -129,6 +173,28 @@ $('linkForm').addEventListener('submit', async (e) => {
   const r = await fetch('link', { method: 'POST', body: url }).catch(() => null);
   $('note').textContent = r && r.ok ? t.linkOk : t.linkFail;
   if (r && r.ok) $('url').value = '';
+});
+
+// Where files go: remembered on this phone. Storage can throw in private mode, hence the guards.
+let to = 'downloads';
+try { to = localStorage.getItem('to') || to; } catch (_) {}
+function setTo(v) {
+  to = v;
+  try { localStorage.setItem('to', v); } catch (_) {}
+  document.querySelectorAll('.seg button').forEach((b) => {
+    b.classList.toggle('on', b.dataset.to === v);
+    b.setAttribute('aria-checked', b.dataset.to === v);
+    b.setAttribute('role', 'radio');
+  });
+  $('where').textContent = v === 'sorted' ? t.whereSorted : t.whereDownloads;
+}
+document.querySelectorAll('.seg button').forEach((b) => b.addEventListener('click', () => setTo(b.dataset.to)));
+setTo(to);
+
+$('give').innerHTML = t.give.map(() => '<a class="give" target="_blank" rel="noopener"><div><b></b><small></small></div><span aria-hidden="true">↗</span></a>').join('');
+[...$('give').children].forEach((a, i) => {
+  const [name, url, note] = t.give[i];
+  a.href = url; a.querySelector('b').textContent = name; a.querySelector('small').textContent = note;
 });
 
 refreshFree();

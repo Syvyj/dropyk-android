@@ -15,4 +15,13 @@
     <string name="done">Готово</string>
     <string name="saved_to">Збережено в %1$s</string>
     <string name="no_app">На цьому телевізорі немає застосунку, щоб це відкрити</string>
+    <string name="size_mb">%1$.0f МБ</string>
+    <string name="size_gb">%1$.1f ГБ</string>
+    <string name="support">Підтримати автора</string>
+    <string name="support_lead">Dropyk безкоштовний і таким лишиться. Скануйте, як вам зручно, — оплата відкриється на телефоні.</string>
+    <string name="support_kofi_note">Картка чи PayPal</string>
+    <string name="support_bmc_note">Кава, будь-яка сума</string>
+    <string name="support_mono">Банка Monobank</string>
+    <string name="support_mono_note">Картка, Apple Pay, Google Pay</string>
+    <string name="close">Закрити</string>
 </resources>

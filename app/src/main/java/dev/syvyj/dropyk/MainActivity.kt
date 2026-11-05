@@ -43,6 +43,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.withFrameNanos
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.activity.compose.BackHandler
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -102,8 +107,21 @@ private fun DropScreen() {
     val url = remember { Drop.start() }
     val state by Drop.state.collectAsStateWithLifecycle()
     val actionFocus = remember { FocusRequester() }
+    var support by remember { mutableStateOf(false) }
+    val idle = state is DropState.Waiting || state is DropState.Connected || state is DropState.Failed
+
+    if (support && idle) {
+        BackHandler { support = false }
+        SupportScreen(onClose = { support = false })
+        return
+    }
 
     Box(Modifier.fillMaxSize().background(Bg).padding(horizontal = 64.dp, vertical = 48.dp)) {
+        if (idle) {
+            Box(Modifier.align(Alignment.BottomEnd)) {
+                Action(stringResource(R.string.support), null) { support = true }
+            }
+        }
         Column(Modifier.align(Alignment.Center).width(820.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(20.dp)) {
                 Droplet(receiving = state is DropState.Receiving)
@@ -114,10 +132,9 @@ private fun DropScreen() {
             }
             Box(Modifier.height(28.dp))
 
-            val showQr = state is DropState.Waiting || state is DropState.Connected || state is DropState.Failed
             if (url == null) {
                 Status(stringResource(R.string.no_network))
-            } else if (showQr) {
+            } else if (idle) {
                 Row(horizontalArrangement = Arrangement.spacedBy(32.dp), verticalAlignment = Alignment.CenterVertically) {
                     QrCode(url, 240.dp)
                     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -155,7 +172,7 @@ private fun DropScreen() {
                         }
                         Action(stringResource(R.string.done), if (s.mime.startsWith("image/")) actionFocus else null) { Drop.dismiss() }
                     }
-                    Text(stringResource(R.string.saved_to, "Download/${Drop.FOLDER}"), color = TextMuted, fontSize = 16.sp, modifier = Modifier.padding(top = 16.dp))
+                    Text(stringResource(R.string.saved_to, s.folder), color = TextMuted, fontSize = 16.sp, modifier = Modifier.padding(top = 16.dp))
                 }
                 is DropState.Link -> {
                     val context = LocalContext.current
@@ -280,8 +297,42 @@ private fun QrCode(content: String, size: Dp) {
     }
 }
 
+@Composable
 private fun size(bytes: Long): String =
-    if (bytes > 1_000_000_000) "%.1f GB".format(bytes / 1e9) else "%.0f MB".format(bytes / 1e6)
+    if (bytes > 1_000_000_000) stringResource(R.string.size_gb, bytes / 1e9) else stringResource(R.string.size_mb, bytes / 1e6)
+
+/** Where donations go: the same pages as on the site and in Likhtar. */
+private class Donate(val name: Int, val note: Int, val url: String)
+
+private val KOFI = Donate(R.string.support_kofi, R.string.support_kofi_note, "https://ko-fi.com/syvyj")
+private val BMC = Donate(R.string.support_bmc, R.string.support_bmc_note, "https://buymeacoffee.com/syvyj")
+private val MONO = Donate(R.string.support_mono, R.string.support_mono_note, "https://send.monobank.ua/jar/5juJPj142b")
+
+/** Three QR codes side by side: scan the one you like to pay with, the payment opens on the phone. Monobank first in Ukrainian. */
+@Composable
+private fun SupportScreen(onClose: () -> Unit) {
+    val ukrainian = LocalConfiguration.current.locales[0].language == "uk"
+    val options = if (ukrainian) listOf(MONO, KOFI, BMC) else listOf(KOFI, BMC, MONO)
+    val focus = remember { FocusRequester() }
+    Box(Modifier.fillMaxSize().background(Bg), contentAlignment = Alignment.Center) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(stringResource(R.string.support), color = TextPrimary, fontSize = 36.sp, fontWeight = FontWeight.SemiBold)
+            Text(stringResource(R.string.support_lead), color = TextMuted, fontSize = 18.sp, modifier = Modifier.padding(top = 8.dp, bottom = 32.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(40.dp)) {
+                options.forEach { option ->
+                    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.width(220.dp)) {
+                        QrCode(option.url, 200.dp)
+                        Text(stringResource(option.name), color = TextPrimary, fontSize = 20.sp, modifier = Modifier.padding(top = 14.dp))
+                        Text(stringResource(option.note), color = TextMuted, fontSize = 15.sp)
+                    }
+                }
+            }
+            Box(Modifier.padding(top = 36.dp)) { Action(stringResource(R.string.close), focus, onClose) }
+        }
+    }
+    // One frame first: the button isn't attached yet when this screen replaces the main one.
+    LaunchedEffect(Unit) { withFrameNanos { }; runCatching { focus.requestFocus() } }
+}
 
 private fun openFile(context: Context, uri: Uri, name: String, mime: String) {
     val intent = Intent(Intent.ACTION_VIEW).setDataAndType(uri, mime).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)

@@ -30,8 +30,8 @@ sealed interface DropState {
     data object Waiting : DropState
     data object Connected : DropState
     data class Receiving(val name: String, val done: Long, val total: Long) : DropState
-    /** [uri] points at the file in Downloads; that's what goes to the player or installer. */
-    data class Received(val uri: Uri, val name: String, val mime: String, val count: Int) : DropState
+    /** [uri] is the saved file, handed to the player or installer; [folder] is shown to the person. */
+    data class Received(val uri: Uri, val name: String, val mime: String, val folder: String, val count: Int) : DropState
     data class Link(val url: String) : DropState
     data class Failed(val name: String) : DropState
 }
@@ -41,7 +41,9 @@ sealed interface DropState {
  * home network, the QR leads to `http://<ip>:<port>/<token>/`, and the phone's browser POSTs each
  * file as a raw body. Bytes go to disk in chunks, so a 4 GB film fits through a 1 GB box.
  *
- * Files land in Downloads/Dropyk (MediaStore, no permission on Android 10+) and stay there.
+ * Files land in Download/Dropyk, or — when the phone asks for `sorted` — videos in Movies/Dropyk,
+ * photos in Pictures/Dropyk and music in Music/Dropyk, where players and galleries look first.
+ * MediaStore needs no permission for that on Android 10+.
  * The token is stable, so a bookmark on the phone keeps working across restarts.
  *
  * ponytail: one file at a time; the phone page sends a batch one by one.
@@ -124,18 +126,18 @@ object Drop {
                     out.error(400, "not_a_link")
                 }
             }
-            method == "POST" && route == "upload" -> upload(input, out, query["name"].orEmpty(), length)
+            method == "POST" && route == "upload" -> upload(input, out, query["name"].orEmpty(), length, sorted = query["to"] == "sorted")
             else -> out.reply(404, "text/plain", "Not found")
         }
     }
 
-    private fun upload(input: InputStream, out: OutputStream, rawName: String, length: Long) {
+    private fun upload(input: InputStream, out: OutputStream, rawName: String, length: Long, sorted: Boolean) {
         if (length <= 0) return out.error(411, "unknown_size")
         if (length + MARGIN > free()) return out.error(507, "no_space")
         if (!busy.compareAndSet(false, true)) return out.error(409, "busy")
         val name = safeName(rawName)
         val mime = mimeOf(name)
-        val target = runCatching { create(name, mime) }.getOrElse {
+        val target = runCatching { create(name, mime, sorted) }.getOrElse {
             busy.set(false)
             Log.w(TAG, "create $name", it)
             return out.error(500, "cant_create")
@@ -166,8 +168,8 @@ object Drop {
             }
             publish(target)
             received++
-            _state.value = DropState.Received(target.uri, target.name, mime, received)
-            out.reply(200, "application/json", "{}")
+            _state.value = DropState.Received(target.uri, target.name, mime, target.folder, received)
+            out.reply(200, "application/json", """{"folder":"${target.folder}"}""")
         } catch (e: Exception) {
             discard(target)
             _state.value = DropState.Failed(target.name)
@@ -177,31 +179,43 @@ object Drop {
         }
     }
 
-    private class Target(val uri: Uri, val name: String, val file: File? = null)
+    private class Target(val uri: Uri, val name: String, val folder: String, val file: File? = null)
 
-    /** A new file in Downloads/Dropyk; MediaStore renames duplicates itself ("name (1).jpg"). */
-    private fun create(name: String, mime: String): Target {
+    /**
+     * A new file in its folder; MediaStore renames duplicates itself ("name (1).jpg").
+     * Each media collection only accepts its own top folder, hence the pairs below.
+     */
+    private fun create(name: String, mime: String, sorted: Boolean): Target {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            val values = ContentValues().apply {
-                put(MediaStore.Downloads.DISPLAY_NAME, name)
-                put(MediaStore.Downloads.MIME_TYPE, mime)
-                put(MediaStore.Downloads.RELATIVE_PATH, "${Environment.DIRECTORY_DOWNLOADS}/$FOLDER")
-                // Hidden from other apps while writing, so a player can't grab half a file.
-                put(MediaStore.Downloads.IS_PENDING, 1)
+            val (collection, top) = when {
+                !sorted -> MediaStore.Downloads.EXTERNAL_CONTENT_URI to Environment.DIRECTORY_DOWNLOADS
+                mime.startsWith("video/") -> MediaStore.Video.Media.EXTERNAL_CONTENT_URI to Environment.DIRECTORY_MOVIES
+                mime.startsWith("image/") -> MediaStore.Images.Media.EXTERNAL_CONTENT_URI to Environment.DIRECTORY_PICTURES
+                mime.startsWith("audio/") -> MediaStore.Audio.Media.EXTERNAL_CONTENT_URI to Environment.DIRECTORY_MUSIC
+                else -> MediaStore.Downloads.EXTERNAL_CONTENT_URI to Environment.DIRECTORY_DOWNLOADS
             }
-            val uri = context.contentResolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values) ?: error("MediaStore refused")
-            val actual = context.contentResolver.query(uri, arrayOf(MediaStore.Downloads.DISPLAY_NAME), null, null, null)
+            val folder = "$top/$FOLDER"
+            val values = ContentValues().apply {
+                put(MediaStore.MediaColumns.DISPLAY_NAME, name)
+                put(MediaStore.MediaColumns.MIME_TYPE, mime)
+                put(MediaStore.MediaColumns.RELATIVE_PATH, folder)
+                // Hidden from other apps while writing, so a player can't grab half a file.
+                put(MediaStore.MediaColumns.IS_PENDING, 1)
+            }
+            val uri = context.contentResolver.insert(collection, values) ?: error("MediaStore refused")
+            val actual = context.contentResolver.query(uri, arrayOf(MediaStore.MediaColumns.DISPLAY_NAME), null, null, null)
                 ?.use { c -> if (c.moveToFirst()) c.getString(0) else null } ?: name
-            return Target(uri, actual)
+            return Target(uri, actual, folder)
         }
+        // ponytail: before Android 10 everything goes to the app's own folder, no sorting.
         val file = unique(name)
         file.createNewFile()
-        return Target(FileProvider.getUriForFile(context, "${context.packageName}.files", file), file.name, file)
+        return Target(FileProvider.getUriForFile(context, "${context.packageName}.files", file), file.name, legacyDir.path, file)
     }
 
     private fun publish(target: Target) {
         if (target.file != null || Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return
-        context.contentResolver.update(target.uri, ContentValues().apply { put(MediaStore.Downloads.IS_PENDING, 0) }, null, null)
+        context.contentResolver.update(target.uri, ContentValues().apply { put(MediaStore.MediaColumns.IS_PENDING, 0) }, null, null)
     }
 
     private fun discard(target: Target) {

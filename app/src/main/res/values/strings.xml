@@ -16,4 +16,15 @@
     <string name="done">Done</string>
     <string name="saved_to">Saved to %1$s</string>
     <string name="no_app">No app on this TV can open it</string>
+    <string name="size_mb">%1$.0f MB</string>
+    <string name="size_gb">%1$.1f GB</string>
+    <string name="support">Support the author</string>
+    <string name="support_lead">Dropyk is free and will stay free. Scan the way that suits you — the payment opens on your phone.</string>
+    <string name="support_kofi" translatable="false">Ko-fi</string>
+    <string name="support_kofi_note">Card or PayPal</string>
+    <string name="support_bmc" translatable="false">Buy Me a Coffee</string>
+    <string name="support_bmc_note">A coffee, any amount</string>
+    <string name="support_mono">Monobank jar</string>
+    <string name="support_mono_note">Card, Apple Pay, Google Pay</string>
+    <string name="close">Close</string>
 </resources>
