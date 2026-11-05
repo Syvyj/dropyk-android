@@ -122,6 +122,16 @@ class MainActivity : ComponentActivity() {
         // A big upload takes minutes; the screensaver shouldn't hide the progress.
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         setContent { DropScreen() }
+        // Turned on before and the process was gone (an update, a reboot): bring it back.
+        if (Background.isOn(this)) Background.start(this)
+    }
+
+    override fun onStart() { super.onStart(); visible = true }
+    override fun onStop() { super.onStop(); visible = false }
+
+    companion object {
+        /** On screen now: the background service doesn't bring it up again. */
+        @Volatile var visible = false
     }
 }
 
@@ -184,6 +194,16 @@ private fun DropScreen() {
                 val release = update
                 if (idle && release != null && updating == null) {
                     Action(stringResource(R.string.update_to, release.version), null) { Update.start(release) }
+                    Box(Modifier.width(14.dp))
+                }
+                if (idle) {
+                    val context = LocalContext.current
+                    var background by remember { mutableStateOf(Background.isOn(context)) }
+                    Action(stringResource(if (background) R.string.background_on else R.string.background_off), null) {
+                        background = !background
+                        Background.set(context, background)
+                        if (background && !Background.canPopUp(context)) Background.askToPopUp(context)
+                    }
                     Box(Modifier.width(14.dp))
                 }
                 if (idle) Action(stringResource(R.string.support), supportFocus, heart = true) { support = true }

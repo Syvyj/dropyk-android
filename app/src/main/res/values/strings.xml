@@ -42,4 +42,9 @@
     <string name="incoming_pin">PIN %1$s — the same as on the phone?</string>
     <string name="accept">Accept</string>
     <string name="decline">Decline</string>
+    <string name="background_off">Receive in background: off</string>
+    <string name="background_on">Receive in background: on</string>
+    <string name="background_channel">Receiving in background</string>
+    <string name="background_title">Dropyk is receiving</string>
+    <string name="background_text">Phones can send to this TV even while Dropyk is closed</string>
 </resources>

@@ -41,4 +41,9 @@
     <string name="incoming_pin">PIN %1$s — такий самий, як на телефоні?</string>
     <string name="accept">Прийняти</string>
     <string name="decline">Відхилити</string>
+    <string name="background_off">Приймати у фоні: вимк.</string>
+    <string name="background_on">Приймати у фоні: увімк.</string>
+    <string name="background_channel">Прийом у фоні</string>
+    <string name="background_title">Dropyk приймає файли</string>
+    <string name="background_text">Телефони можуть надсилати на цей телевізор, навіть коли Dropyk закритий</string>
 </resources>
