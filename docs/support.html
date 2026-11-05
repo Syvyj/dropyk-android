@@ -1,0 +1,35 @@
+<!doctype html>
+<!-- README donate buttons. Render with docs/render-banners.sh; ?id=kofi|bmc|mono&lang=en|uk -->
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  @font-face { font-family: "Manrope"; src: url(../web/fonts/manrope-latin.woff2) format("woff2"); font-weight: 400 800; unicode-range: U+0000-00FF, U+2000-206F; }
+  @font-face { font-family: "Manrope"; src: url(../web/fonts/manrope-cyrillic.woff2) format("woff2"); font-weight: 400 800; unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1; }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { width: 560px; height: 150px; overflow: hidden; background: transparent; }
+  body { font-family: "Manrope", system-ui, sans-serif; padding: 10px; }
+  .give { height: 130px; border-radius: 65px; background: #ece9fa; border: 3px solid #d6cff5;
+          display: flex; align-items: center; gap: 24px; padding: 0 40px 0 22px; color: #161b3d; }
+  .mark { width: 86px; height: 86px; border-radius: 50%; flex: none; display: grid; place-items: center; font-size: 44px; }
+  b { display: block; font-size: 36px; font-weight: 800; letter-spacing: -.02em; line-height: 1.1; }
+  small { display: block; margin-top: 6px; font-size: 25px; font-weight: 600; color: #555c7d; }
+</style>
+</head>
+<body>
+<div class="give"><span class="mark" id="mark"></span><span><b id="name"></b><small id="note"></small></span></div>
+<script>
+  const q = new URLSearchParams(location.search), uk = q.get('lang') === 'uk';
+  // Same names and notes as the site's support block.
+  const all = {
+    kofi: ['💙', '#2e5be0', 'Ko-fi', uk ? 'Картка чи PayPal' : 'Card or PayPal'],
+    bmc:  ['☕', '#7a4cf0', 'Buy Me a Coffee', uk ? 'Кава, будь-яка сума' : 'A coffee, any amount'],
+    mono: ['🫙', '#161b3d', uk ? 'Банка Monobank' : 'Monobank jar', uk ? 'Картка, Apple Pay, Google Pay' : 'Card, Apple Pay, Google Pay'],
+  };
+  const [mark, color, name, note] = all[q.get('id')];
+  Object.assign(document.getElementById('mark'), { textContent: mark }).style.background = color;
+  document.getElementById('name').textContent = name;
+  document.getElementById('note').textContent = note;
+</script>
+</body>
+</html>

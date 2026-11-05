@@ -43,6 +43,16 @@
 
 На Android 10+ дозвіл на доступ до пам'яті не потрібен. На Android 7–9 файли лягають у власну теку застосунку.
 
+## Підтримати автора
+
+Dropyk безкоштовний і таким лишиться. Якщо він вам зручний, можна пригостити кавою:
+
+<p>
+  <a href="https://send.monobank.ua/jar/5juJPj142b"><img src="docs/support-mono-uk.png" alt="Банка Monobank" width="260"></a>
+  <a href="https://ko-fi.com/syvyj"><img src="docs/support-kofi-uk.png" alt="Ko-fi" width="260"></a>
+  <a href="https://buymeacoffee.com/syvyj"><img src="docs/support-bmc-uk.png" alt="Buy Me a Coffee" width="260"></a>
+</p>
+
 ## Приватність
 
 - Файли йдуть з телефона на телевізор вашою власною мережею. Жодного сервера посередині, нічого нікуди не вивантажується.
@@ -68,7 +78,3 @@
 [GPL-3.0](LICENSE).
 
 Приймач Quick Share — це перенесена на Kotlin приймальна частина [NearDrop](https://github.com/grishka/NearDrop) від Grishka (Unlicense), який розібрав протокол. Файли `.proto` в `app/src/main/proto` — © Google LLC, Apache-2.0.
-
-## Підтримати автора
-
-Dropyk безкоштовний і таким лишиться. [Банка Monobank](https://send.monobank.ua/jar/5juJPj142b) · [Ko-fi](https://ko-fi.com/syvyj) · [Buy Me a Coffee](https://buymeacoffee.com/syvyj)

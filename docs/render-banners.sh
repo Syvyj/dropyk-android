@@ -1,5 +1,5 @@
 #!/bin/sh
-# Renders the README banners (docs/banner-*.png) and the social previews (web/assets/social-*.png)
+# Renders the README banners (docs/banner-*.png), the donate buttons (docs/support-*.png) and the social previews (web/assets/social-*.png)
 # from docs/banner.html with headless Chrome. Run from the repo root after the screenshots change.
 set -e
 CHROME="${CHROME:-/Applications/Google Chrome.app/Contents/MacOS/Google Chrome}"
@@ -12,5 +12,10 @@ shot() { "$CHROME" --headless=new --disable-gpu --hide-scrollbars --force-device
 for lang in en uk; do
   shot $lang 1600 560 docs/banner-$lang.png
   shot $lang 1280 640 web/assets/social-$lang.png
+  for id in kofi bmc mono; do
+    "$CHROME" --headless=new --disable-gpu --hide-scrollbars --force-device-scale-factor=1 --window-size=560,150 \
+      --default-background-color=00000000 --virtual-time-budget=3000 --screenshot="docs/support-$id-$lang.png" \
+      "http://127.0.0.1:8799/docs/support.html?id=$id&lang=$lang" 2>/dev/null
+  done
 done
-echo "rendered docs/banner-{en,uk}.png and web/assets/social-{en,uk}.png"
+echo "rendered docs/banner-{en,uk}.png, web/assets/social-{en,uk}.png and docs/support-*.png"

@@ -43,6 +43,16 @@ From an Android phone it's shorter: with Dropyk open on the TV, **Share → Quic
 
 No storage permission is needed on Android 10+. On Android 7–9 files go to the app's own folder.
 
+## Support the author
+
+Dropyk is free and will stay free. If it saves you time, you can buy me a coffee:
+
+<p>
+  <a href="https://ko-fi.com/syvyj"><img src="docs/support-kofi-en.png" alt="Ko-fi" width="260"></a>
+  <a href="https://buymeacoffee.com/syvyj"><img src="docs/support-bmc-en.png" alt="Buy Me a Coffee" width="260"></a>
+  <a href="https://send.monobank.ua/jar/5juJPj142b"><img src="docs/support-mono-en.png" alt="Monobank jar" width="260"></a>
+</p>
+
 ## Privacy
 
 - Files go from the phone to the TV over your own network. There is no server in between and nothing is uploaded anywhere.
@@ -68,7 +78,3 @@ The site lives in [`web/`](web/): `python3 web/build.py` writes the English and 
 [GPL-3.0](LICENSE).
 
 The Quick Share receiver is a Kotlin port of the receiving side of [NearDrop](https://github.com/grishka/NearDrop) by Grishka (Unlicense), who reverse engineered the protocol. The `.proto` files in `app/src/main/proto` are © Google LLC, Apache-2.0.
-
-## Support the author
-
-Dropyk is free and will stay free. [Ko-fi](https://ko-fi.com/syvyj) · [Buy Me a Coffee](https://buymeacoffee.com/syvyj) · [Monobank jar](https://send.monobank.ua/jar/5juJPj142b)
