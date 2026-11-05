@@ -43,6 +43,9 @@ def render(template, lang):
     values = {
         "ver": ver, "lang": lang, "root": root, "download": DOWNLOAD, "repo": REPO,
         "mac_download": MAC_DOWNLOAD, "mac_repo": MAC_REPO,
+        # Each language gets its own shortcut: the name it imports with is the file's name.
+        "shortcut": root + "shortcut/" + ("Send%20to%20Dropyk.shortcut" if lang == "en" else
+                                           "%D0%9D%D0%B0%D0%B4%D1%96%D1%81%D0%BB%D0%B0%D1%82%D0%B8%20%D0%BD%D0%B0%20Dropyk.shortcut"),
         "home": root + ("" if lang == "en" else "uk/"),
         "other": root + ("uk/" if lang == "en" else ""),
         "url": SITE + ("" if lang == "en" else "uk/"),

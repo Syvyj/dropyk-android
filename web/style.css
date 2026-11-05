@@ -111,6 +111,10 @@ main > section { max-width: var(--max); margin: 0 auto; padding: clamp(64px, 8vw
 .where-card { background: var(--card); border-radius: 18px; padding: 20px 22px; display: grid; gap: 6px; }
 .where-card span { color: var(--muted); }
 
+.more-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 28px; }
+.more-card { background: var(--card); border-radius: 22px; padding: 26px 28px; display: grid; gap: 10px; align-content: start; justify-items: start; }
+.more-card p { color: var(--muted); }
+
 .mac { display: grid; grid-template-columns: auto 1fr; gap: 28px; align-items: center; }
 .mac > div { background: var(--card); border-radius: 22px; padding: 28px 32px; }
 .mac p { color: var(--muted); margin: 10px 0 0; max-width: 62ch; }
@@ -143,7 +147,7 @@ main > section { max-width: var(--max); margin: 0 auto; padding: clamp(64px, 8vw
 
 @media (max-width: 920px) {
   .nav nav { display: none; }
-  .hero, .feature, .support, .mac { grid-template-columns: 1fr; }
+  .hero, .feature, .support, .mac, .more-cards { grid-template-columns: 1fr; }
   .steps, .private ul { grid-template-columns: 1fr; }
   .feature > div:last-child { order: -1; }
 }

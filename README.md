@@ -22,9 +22,12 @@ From an Android phone it's shorter: with Dropyk open on the TV, **Share → Quic
 
 - **Photos, videos, APKs, any file** — one or a hundred at a time, sent one by one. Bytes go straight to the TV's storage, so a 4 GB film never passes through its memory; the page checks free space first. On a budget Google TV box over Wi‑Fi, files arrive at about 12–20 MB/s.
 - **Quick Share** — the TV shows up in the Share sheet of Android phones on the same Wi‑Fi, under its own name. Files, links and text; the TV asks before accepting.
+- **iPhone, iPad and Mac** — add the [Send to Dropyk](https://dropyk.syvyj.dev/shortcut/Send%20to%20Dropyk.shortcut) shortcut, type the TV's address once (it's under the QR code), and Dropyk shows up in the Share sheet for photos, videos and files.
 - **Links** — paste one on the phone and open it on the TV.
 - **One press with the remote** — a video plays, an APK installs, a photo shows on screen, a link opens.
 - **You choose where files go** — *Downloads* puts everything in `Download/Dropyk`; *By type* puts videos in `Movies/Dropyk`, photos in `Pictures/Dropyk`, music in `Music/Dropyk` and the rest in `Download/Dropyk`. The phone remembers the choice.
+- **Receive in background** — a switch on the main screen keeps Dropyk receiving while it's closed, starts it after a reboot, and brings it to the screen when something arrives (it asks for *Display over other apps* for that).
+- **Updates itself** — once a day it checks GitHub and offers *Update to …* on the TV.
 - **English and Ukrainian** on the TV and on the phone page.
 
 | TV | Phone |
@@ -55,6 +58,8 @@ No storage permission is needed on Android 10+. On Android 7–9 files go to the
 ```
 
 Release signing reads `DROPYK_KEYSTORE`, `DROPYK_KEYSTORE_PASSWORD`, `DROPYK_KEY_ALIAS` and `DROPYK_KEY_PASSWORD` from `.env` or `-P`; without them the release build is debug-signed.
+
+The iPhone shortcut comes from [`shortcut/make.py`](shortcut/make.py) (macOS: it signs with `shortcuts sign`).
 
 The site lives in [`web/`](web/): `python3 web/build.py` writes the English and Ukrainian pages. The README banners and social previews come from [`docs/banner.html`](docs/banner.html): `docs/render-banners.sh` (needs Google Chrome).
 
