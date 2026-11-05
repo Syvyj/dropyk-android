@@ -1,0 +1,18 @@
+<resources>
+    <string name="tagline">Файли й посилання з телефона на телевізор — без застосунку на телефоні</string>
+    <string name="step1">1. Наведіть камеру телефона на код</string>
+    <string name="step2">2. На сторінці, що відкриється, виберіть файли</string>
+    <string name="no_network">Телевізор не в локальній мережі. Підключіть Wi‑Fi чи кабель і відкрийте Dropyk знову.</string>
+    <string name="waiting">Чекаю на телефон…</string>
+    <string name="connected">Телефон на зв\'язку — виберіть файли</string>
+    <string name="receiving">Приймаю %1$s — %2$d%% з %3$s</string>
+    <string name="received">Отримано %1$s (файлів за сеанс: %2$d)</string>
+    <string name="failed">%1$s прийшов не весь. Надішліть ще раз.</string>
+    <string name="watch">Дивитись</string>
+    <string name="install">Встановити</string>
+    <string name="open">Відкрити</string>
+    <string name="open_link">Відкрити посилання</string>
+    <string name="done">Готово</string>
+    <string name="saved_to">Збережено в %1$s</string>
+    <string name="no_app">На цьому телевізорі немає застосунку, щоб це відкрити</string>
+</resources>

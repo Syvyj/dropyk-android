@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">Dropyk</string>
+    <string name="tagline">Files and links from your phone to the TV — no app on the phone</string>
+    <string name="step1">1. Scan the code with your phone camera</string>
+    <string name="step2">2. Choose files on the page that opens</string>
+    <string name="no_network">The TV isn\'t connected to a local network. Connect it to Wi‑Fi or Ethernet and open Dropyk again.</string>
+    <string name="waiting">Waiting for the phone…</string>
+    <string name="connected">Phone connected — choose files</string>
+    <string name="receiving">Receiving %1$s — %2$d%% of %3$s</string>
+    <string name="received">Received %1$s (files this session: %2$d)</string>
+    <string name="failed">%1$s didn\'t arrive in full. Send it again.</string>
+    <string name="watch">Watch</string>
+    <string name="install">Install</string>
+    <string name="open">Open</string>
+    <string name="open_link">Open link</string>
+    <string name="done">Done</string>
+    <string name="saved_to">Saved to %1$s</string>
+    <string name="no_app">No app on this TV can open it</string>
+</resources>

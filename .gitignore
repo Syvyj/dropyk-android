@@ -1,0 +1,11 @@
+.DS_Store
+.idea/
+*.iml
+local.properties
+build/
+.gradle/
+.kotlin/
+*.apk
+*.aab
+*.keystore
+.env

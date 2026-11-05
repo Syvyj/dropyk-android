@@ -1,0 +1,137 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#12141F">
+<title>Dropyk</title>
+<!-- Served by the TV itself, so paths are relative. File: raw POST body to upload?name=, with progress; link: POST link. -->
+<style>
+  :root { --bg:#12141F; --card:#1C2030; --line:#2A3045; --text:#EEF1FA; --muted:#9AA3B8; --blue:#4C8DFF; --violet:#7A4CF2; --ok:#7FD1A8; --bad:#F07A7A; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:16px/1.4 system-ui,-apple-system,Roboto,sans-serif; }
+  main { max-width:520px; margin:0 auto; padding:22px 16px 40px; }
+  h1 { margin:0 0 4px; font-size:23px; font-weight:650; }
+  .sub { color:var(--muted); font-size:14px; margin:0 0 22px; }
+  .pick { display:flex; align-items:center; justify-content:center; width:100%; padding:18px; border-radius:16px;
+          background:linear-gradient(135deg,var(--blue),var(--violet)); color:#fff; font-size:18px; font-weight:650; cursor:pointer; }
+  .pick input { display:none; }
+  .free { color:var(--muted); font-size:13px; margin:10px 2px 0; }
+  ul { list-style:none; margin:18px 0 0; padding:0; }
+  li { background:var(--card); border-radius:14px; padding:12px 14px; margin-bottom:8px; }
+  .row { display:flex; justify-content:space-between; gap:10px; font-size:15px; }
+  .name { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .pct { color:var(--muted); flex:none; font-variant-numeric:tabular-nums; }
+  .bar { height:4px; border-radius:2px; background:var(--line); margin-top:9px; overflow:hidden; }
+  .bar i { display:block; height:100%; width:0; background:var(--blue); transition:width .2s; }
+  li.ok .pct { color:var(--ok); }
+  li.bad .pct { color:var(--bad); }
+  h2 { font-size:15px; font-weight:600; color:var(--muted); margin:28px 0 8px; }
+  .link { display:flex; gap:8px; }
+  .link input { flex:1; min-width:0; background:var(--card); color:var(--text); border:1px solid var(--line); border-radius:12px;
+                padding:13px 14px; font-size:16px; outline:none; }
+  .link input:focus { border-color:var(--blue); }
+  .link button { border:1px solid var(--line); border-radius:12px; padding:0 16px; background:var(--card); color:var(--blue); font:inherit; font-weight:600; }
+  .note { color:var(--muted); font-size:13px; margin-top:8px; min-height:18px; }
+</style>
+</head>
+<body>
+<main>
+  <h1 data-t="title"></h1>
+  <p class="sub" data-t="sub"></p>
+  <label class="pick"><span data-t="pick"></span><input id="files" type="file" multiple></label>
+  <div class="free" id="free"></div>
+  <ul id="list"></ul>
+  <h2 data-t="orLink"></h2>
+  <form class="link" id="linkForm">
+    <input id="url" type="url" inputmode="url" placeholder="https://youtu.be/…" autocomplete="off">
+    <button type="submit" data-t="open"></button>
+  </form>
+  <div class="note" id="note"></div>
+</main>
+<script>
+const T = {
+  en: {
+    title: 'Send to TV', sub: 'Videos, photos or APKs — the TV offers what to do with each. Everything goes to Downloads → Dropyk on the TV. You can bookmark this page.',
+    pick: 'Choose files', orLink: 'Or a link', open: 'Open', free: 'Free on TV: ', waiting: 'waiting', onTv: 'on TV',
+    noSpace: 'not enough space', lost: 'connection lost', failed: 'error', needLink: 'Paste a link that starts with https://',
+    linkOk: 'Done — confirm on the TV', linkFail: 'Could not send', gb: ' GB', mb: ' MB',
+    errors: { no_space: 'not enough space on TV', busy: 'TV is receiving another file', interrupted: 'transfer interrupted',
+              cant_create: 'TV could not create the file', unknown_size: 'unknown size', not_a_link: 'not a link' },
+  },
+  uk: {
+    title: 'Передати на телевізор', sub: 'Відео, фото чи APK — телевізор запропонує, що з ним зробити. Усе лягає в «Завантаження → Dropyk» на телевізорі. Цю сторінку можна зберегти в закладки.',
+    pick: 'Вибрати файли', orLink: 'Або посилання', open: 'Відкрити', free: 'Вільно на телевізорі: ', waiting: 'чекає', onTv: 'на ТБ',
+    noSpace: 'не вистачає місця', lost: 'зв\'язок обірвався', failed: 'помилка', needLink: 'Вставте посилання, що починається з https://',
+    linkOk: 'Готово — підтвердіть на телевізорі', linkFail: 'Не вдалося передати', gb: ' ГБ', mb: ' МБ',
+    errors: { no_space: 'не вистачає місця на ТБ', busy: 'ТБ уже приймає інший файл', interrupted: 'передачу перервано',
+              cant_create: 'ТБ не зміг створити файл', unknown_size: 'невідомий розмір', not_a_link: 'це не посилання' },
+  },
+};
+const t = T[(navigator.language || 'en').slice(0, 2)] || T.en;
+document.documentElement.lang = t === T.uk ? 'uk' : 'en';
+document.querySelectorAll('[data-t]').forEach((el) => { el.textContent = t[el.dataset.t]; });
+
+const $ = (id) => document.getElementById(id);
+const size = (b) => b > 1e9 ? (b / 1e9).toFixed(1) + t.gb : (b / 1e6).toFixed(b > 1e8 ? 0 : 1) + t.mb;
+let free = null;
+
+async function refreshFree() {
+  try {
+    free = (await (await fetch('space', { cache: 'no-store' })).json()).free;
+    $('free').textContent = t.free + size(free);
+  } catch (_) { $('free').textContent = ''; }
+}
+
+function send(file, li) {
+  return new Promise((done) => {
+    const pct = li.querySelector('.pct'), bar = li.querySelector('i');
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', 'upload?name=' + encodeURIComponent(file.name));
+    xhr.upload.onprogress = (e) => {
+      if (!e.lengthComputable) return;
+      const p = Math.round(e.loaded / e.total * 100);
+      bar.style.width = p + '%'; pct.textContent = p + '%';
+    };
+    xhr.onload = () => {
+      if (xhr.status === 200) { li.className = 'ok'; bar.style.width = '100%'; pct.textContent = t.onTv; }
+      else { li.className = 'bad'; try { pct.textContent = t.errors[JSON.parse(xhr.responseText).error] || t.failed; } catch (_) { pct.textContent = t.failed; } }
+      done();
+    };
+    xhr.onerror = () => { li.className = 'bad'; pct.textContent = t.lost; done(); };
+    xhr.send(file);
+  });
+}
+
+$('files').addEventListener('change', async (e) => {
+  const files = [...e.target.files];
+  e.target.value = '';
+  const items = files.map((f) => {
+    const li = document.createElement('li');
+    li.innerHTML = '<div class="row"><span class="name"></span><span class="pct"></span></div><div class="bar"><i></i></div>';
+    li.querySelector('.name').textContent = f.name + ' · ' + size(f.size);
+    li.querySelector('.pct').textContent = t.waiting;
+    $('list').prepend(li);
+    return [f, li];
+  });
+  // One by one: the TV takes one file at a time, and it has one disk anyway.
+  for (const [f, li] of items) {
+    if (free !== null && f.size > free) { li.className = 'bad'; li.querySelector('.pct').textContent = t.noSpace; continue; }
+    await send(f, li);
+    await refreshFree();
+  }
+});
+
+$('linkForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const url = $('url').value.trim();
+  if (!/^https?:\/\//.test(url)) { $('note').textContent = t.needLink; return; }
+  const r = await fetch('link', { method: 'POST', body: url }).catch(() => null);
+  $('note').textContent = r && r.ok ? t.linkOk : t.linkFail;
+  if (r && r.ok) $('url').value = '';
+});
+
+refreshFree();
+</script>
+</body>
+</html>
