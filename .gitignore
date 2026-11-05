@@ -9,3 +9,4 @@ build/
 *.aab
 *.keystore
 .env
+.wrangler/
