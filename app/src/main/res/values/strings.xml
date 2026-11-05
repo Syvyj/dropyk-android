@@ -27,4 +27,7 @@
     <string name="support_mono">Monobank jar</string>
     <string name="support_mono_note">Card, Apple Pay, Google Pay</string>
     <string name="close">Close</string>
+    <string name="send_title">Send to TV</string>
+    <string name="url_hint">Or open this address on the phone:</string>
+    <string name="link_title">Link from the phone</string>
 </resources>

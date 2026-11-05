@@ -70,6 +70,15 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.drawBehind
+import androidx.tv.material3.LocalContentColor
+import androidx.tv.material3.Border
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.ui.text.style.TextAlign
 import androidx.tv.material3.Button
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.Text
@@ -88,14 +97,20 @@ class DropykApp : Application() {
     }
 }
 
-private val Bg = Color(0xFF12141F)
-private val Card = Color(0xFF1C2030)
-private val Line = Color(0xFF2A3045)
-private val TextPrimary = Color(0xFFEEF1FA)
-private val TextMuted = Color(0xFF9AA3B8)
-private val Blue = Color(0xFF4C8DFF)
-private val Violet = Color(0xFF7A4CF2)
-private val Ok = Color(0xFF7FD1A8)
+
+// Light lavender room, near-white cards, navy ink. Pure white only behind the QR — a big white
+// screen glares in a dark living room, and the scanner needs the contrast there anyway.
+private val Bg = Color(0xFFECE9FA)
+private val Blob = Color(0xFFE3DEF7)
+private val Card = Color(0xFFF8F7FD)
+private val Line = Color(0xFFDCD7F2)
+private val Ink = Color(0xFF161B3D)
+private val Muted = Color(0xFF555C7D)
+private val Accent = Color(0xFF2E5BE0)
+private val Blue = Color(0xFF3D7BF7)
+private val Violet = Color(0xFF7A4CF0)
+private val Ok = Color(0xFF18794E)
+private val Bad = Color(0xFFB42318)
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -121,83 +136,117 @@ private fun DropScreen() {
         return
     }
 
-    Box(Modifier.fillMaxSize().background(Bg).padding(horizontal = 64.dp, vertical = 48.dp)) {
-        if (idle) {
-            Box(Modifier.align(Alignment.BottomEnd)) {
-                Action(stringResource(R.string.support), supportFocus) { support = true }
-            }
-            FocusOnShow(supportFocus, support)
-        }
-        Column(Modifier.align(Alignment.Center).width(820.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(20.dp)) {
-                Droplet(receiving = state is DropState.Receiving)
-                Column {
-                    Text("Dropyk", color = TextPrimary, fontSize = 40.sp, fontWeight = FontWeight.SemiBold)
-                    Text(stringResource(R.string.tagline), color = TextMuted, fontSize = 18.sp, modifier = Modifier.padding(top = 4.dp))
-                }
-            }
-            Box(Modifier.height(28.dp))
+    Room {
+        Column(Modifier.fillMaxSize().padding(horizontal = 64.dp, vertical = 40.dp)) {
+            Header(receiving = state is DropState.Receiving)
+            Text(stringResource(R.string.tagline), color = Muted, fontSize = 18.sp, modifier = Modifier.padding(top = 6.dp))
 
-            if (url == null) {
-                Status(stringResource(R.string.no_network))
-            } else if (idle) {
-                Row(horizontalArrangement = Arrangement.spacedBy(32.dp), verticalAlignment = Alignment.CenterVertically) {
-                    QrCode(url, 240.dp)
-                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                        Text(stringResource(R.string.step1), color = TextPrimary, fontSize = 22.sp)
-                        Text(stringResource(R.string.step2), color = TextPrimary, fontSize = 22.sp)
-                        Text(url, color = TextMuted, fontSize = 16.sp, modifier = Modifier.padding(top = 6.dp))
+            Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.CenterStart) {
+                when {
+                    url == null -> Panel { Text(stringResource(R.string.no_network), color = Ink, fontSize = 22.sp) }
+                    idle -> Row(horizontalArrangement = Arrangement.spacedBy(28.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Box(Modifier.clip(RoundedCornerShape(20.dp)).background(Color.White).padding(18.dp)) { QrCode(url, 220.dp) }
+                        Panel(Modifier.weight(1f)) {
+                            Text(stringResource(R.string.step1), color = Ink, fontSize = 24.sp, fontWeight = FontWeight.SemiBold)
+                            Text(stringResource(R.string.step2), color = Ink, fontSize = 24.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(top = 14.dp))
+                            Text(stringResource(R.string.url_hint), color = Muted, fontSize = 15.sp, modifier = Modifier.padding(top = 26.dp))
+                            Text(url, color = Accent, fontSize = 16.sp, modifier = Modifier.padding(top = 2.dp))
+                        }
                     }
+                    else -> Transfer(state, actionFocus)
                 }
-                Box(Modifier.height(28.dp))
             }
 
-            when (val s = state) {
-                DropState.Waiting -> if (url != null) Status(stringResource(R.string.waiting))
-                DropState.Connected -> Status(stringResource(R.string.connected))
-                is DropState.Receiving -> {
-                    Status(stringResource(R.string.receiving, s.name, (s.done * 100 / s.total.coerceAtLeast(1)).toInt(), size(s.total)))
-                    Box(Modifier.fillMaxWidth().height(6.dp).background(Line, RoundedCornerShape(3.dp))) {
-                        Box(
-                            Modifier.fillMaxWidth(s.done.toFloat() / s.total.coerceAtLeast(1)).height(6.dp)
-                                .background(Brush.horizontalGradient(listOf(Blue, Violet)), RoundedCornerShape(3.dp)),
-                        )
+            Row(Modifier.fillMaxWidth().height(56.dp), verticalAlignment = Alignment.CenterVertically) {
+                Box(Modifier.weight(1f)) {
+                    when (val s = state) {
+                        DropState.Waiting -> if (url != null) Status(stringResource(R.string.waiting)) { Spinner() }
+                        DropState.Connected -> Status(stringResource(R.string.connected)) { Dot(Ok) }
+                        is DropState.Failed -> Status(stringResource(R.string.failed, s.name), color = Bad) { Dot(Bad) }
+                        else -> Unit
                     }
                 }
-                is DropState.Received -> {
-                    val context = LocalContext.current
-                    Status(stringResource(R.string.received, s.name, s.count), ok = true)
-                    if (s.mime.startsWith("image/")) Preview(s.uri)
-                    Row(horizontalArrangement = Arrangement.spacedBy(16.dp), modifier = Modifier.padding(top = 8.dp)) {
-                        when {
-                            s.mime.startsWith("video/") || s.mime.startsWith("audio/") ->
-                                Action(stringResource(R.string.watch), actionFocus) { watch(context, s.path, s.name, s.mime) }
-                            s.mime == Drop.APK -> Action(stringResource(R.string.install), actionFocus) { install(context, s.uri, s.name) }
-                            s.mime.startsWith("image/") -> Unit
-                            else -> Action(stringResource(R.string.open), actionFocus) { openFile(context, s.uri, s.name, s.mime) }
-                        }
-                        Action(stringResource(R.string.done), if (s.mime.startsWith("image/")) actionFocus else null) { Drop.dismiss() }
-                    }
-                    Text(stringResource(R.string.saved_to, s.folder), color = TextMuted, fontSize = 16.sp, modifier = Modifier.padding(top = 16.dp))
-                }
-                is DropState.Link -> {
-                    val context = LocalContext.current
-                    Status(s.url, ok = true)
-                    Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                        Action(stringResource(R.string.open_link), actionFocus) {
-                            openUri(context, Intent(Intent.ACTION_VIEW, Uri.parse(s.url)))
-                            Drop.dismiss()
-                        }
-                        Action(stringResource(R.string.done), null) { Drop.dismiss() }
-                    }
-                }
-                is DropState.Failed -> Status(stringResource(R.string.failed, s.name))
+                if (idle) Action(stringResource(R.string.support), supportFocus, heart = true) { support = true }
             }
         }
     }
+    if (idle) FocusOnShow(supportFocus, support)
 
     // Something arrived: focus jumps to the action — the person is holding a remote now.
     if (state is DropState.Received || state is DropState.Link) FocusOnShow(actionFocus, state)
+}
+
+/** Everything that isn't the QR: progress, the received file with its actions, a link. */
+@Composable
+private fun Transfer(state: DropState, actionFocus: FocusRequester) {
+    val context = LocalContext.current
+    when (val s = state) {
+        is DropState.Receiving -> Panel(Modifier.fillMaxWidth()) {
+            Text(stringResource(R.string.receiving, s.name, (s.done * 100 / s.total.coerceAtLeast(1)).toInt(), size(s.total)), color = Ink, fontSize = 24.sp, fontWeight = FontWeight.SemiBold, maxLines = 2)
+            Box(Modifier.padding(top = 22.dp).fillMaxWidth().height(10.dp).clip(RoundedCornerShape(5.dp)).background(Line)) {
+                Box(Modifier.fillMaxWidth(s.done.toFloat() / s.total.coerceAtLeast(1)).height(10.dp).clip(RoundedCornerShape(5.dp)).background(Brush.horizontalGradient(listOf(Blue, Violet))))
+            }
+        }
+        is DropState.Received -> Panel(Modifier.fillMaxWidth()) { Row(horizontalArrangement = Arrangement.spacedBy(28.dp), verticalAlignment = Alignment.CenterVertically) {
+            if (s.mime.startsWith("image/")) Preview(s.uri)
+            Column {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Dot(Ok)
+                Text(stringResource(R.string.received, s.name, s.count), color = Ink, fontSize = 24.sp, fontWeight = FontWeight.SemiBold, maxLines = 2)
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(16.dp), modifier = Modifier.padding(top = 20.dp)) {
+                when {
+                    s.mime.startsWith("video/") || s.mime.startsWith("audio/") ->
+                        Action(stringResource(R.string.watch), actionFocus) { watch(context, s.path, s.name, s.mime) }
+                    s.mime == Drop.APK -> Action(stringResource(R.string.install), actionFocus) { install(context, s.uri, s.name) }
+                    s.mime.startsWith("image/") -> Unit
+                    else -> Action(stringResource(R.string.open), actionFocus) { openFile(context, s.uri, s.name, s.mime) }
+                }
+                Action(stringResource(R.string.done), if (s.mime.startsWith("image/")) actionFocus else null) { Drop.dismiss() }
+            }
+            Text(stringResource(R.string.saved_to, s.folder), color = Muted, fontSize = 16.sp, modifier = Modifier.padding(top = 16.dp))
+            }
+        } }
+        is DropState.Link -> Panel(Modifier.fillMaxWidth()) {
+            Text(stringResource(R.string.link_title), color = Muted, fontSize = 16.sp)
+            Text(s.url, color = Accent, fontSize = 22.sp, maxLines = 2, modifier = Modifier.padding(top = 4.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(16.dp), modifier = Modifier.padding(top = 20.dp)) {
+                Action(stringResource(R.string.open_link), actionFocus) {
+                    openUri(context, Intent(Intent.ACTION_VIEW, Uri.parse(s.url)))
+                    Drop.dismiss()
+                }
+                Action(stringResource(R.string.done), null) { Drop.dismiss() }
+            }
+        }
+        else -> Unit
+    }
+}
+
+/** The lavender background with two soft circles in the corners, drawn once — no animation. */
+@Composable
+private fun Room(content: @Composable () -> Unit) {
+    Box(
+        Modifier.fillMaxSize().background(Bg).drawBehind {
+            drawCircle(Blob, radius = size.height * 0.42f, center = Offset(size.width * 0.97f, size.height * 0.02f))
+            drawCircle(Blob, radius = size.height * 0.30f, center = Offset(size.width * 0.01f, size.height * 1.02f))
+        },
+    ) { content() }
+}
+
+/** One line: droplet, Dropyk, a slash, what this screen is for. */
+@Composable
+private fun Header(receiving: Boolean, title: String = stringResource(R.string.send_title)) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Droplet(receiving)
+        Text("Dropyk", color = Ink, fontSize = 38.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(start = 16.dp))
+        Text("/", color = Muted.copy(alpha = 0.6f), fontSize = 34.sp, modifier = Modifier.padding(horizontal = 18.dp))
+        Text(title, color = Ink, fontSize = 32.sp, fontWeight = FontWeight.Bold, maxLines = 1)
+    }
+}
+
+@Composable
+private fun Panel(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
+    Column(modifier.clip(RoundedCornerShape(24.dp)).background(Card).padding(horizontal = 36.dp, vertical = 30.dp)) { content() }
 }
 
 /**
@@ -216,17 +265,70 @@ private fun FocusOnShow(requester: FocusRequester, key: Any) {
 }
 
 @Composable
-private fun Status(text: String, ok: Boolean = false) {
-    Text(text, color = if (ok) Ok else TextMuted, fontSize = 20.sp, maxLines = 2, modifier = Modifier.padding(bottom = 14.dp))
+private fun Status(text: String, color: Color = Ink, icon: @Composable () -> Unit) {
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+        icon()
+        Text(text, color = color, fontSize = 20.sp, maxLines = 2)
+    }
 }
 
 @Composable
-private fun Action(label: String, focus: FocusRequester?, onClick: () -> Unit) {
+private fun Dot(color: Color) = Box(Modifier.size(12.dp).clip(CircleShape).background(color))
+
+/** A ring of dots turning while the TV waits — only then: nothing is being received yet. */
+@Composable
+private fun Spinner() {
+    val turn by rememberInfiniteTransition(label = "spinner").animateFloat(
+        initialValue = 0f, targetValue = 360f,
+        animationSpec = infiniteRepeatable(tween(1400, easing = LinearEasing)), label = "turn",
+    )
+    Canvas(Modifier.size(28.dp).graphicsLayer { rotationZ = turn }) {
+        val r = size.minDimension / 2 - 3.dp.toPx()
+        for (i in 0 until 10) {
+            val a = Math.toRadians(i * 36.0)
+            drawCircle(
+                Brush.linearGradient(listOf(Blue, Violet)), radius = 2.4.dp.toPx(), alpha = 0.25f + 0.75f * i / 9f,
+                center = Offset(center.x + r * kotlin.math.cos(a).toFloat(), center.y + r * kotlin.math.sin(a).toFloat()),
+            )
+        }
+    }
+}
+
+/**
+ * White pill with a hairline and accent text, so it reads as a button on a card too; focused it
+ * fills blue — the remote's position is never in doubt.
+ */
+@Composable
+private fun Action(label: String, focus: FocusRequester?, heart: Boolean = false, onClick: () -> Unit) {
     Button(
         onClick = onClick,
         modifier = if (focus != null) Modifier.focusRequester(focus) else Modifier,
-        colors = ButtonDefaults.colors(containerColor = Card, contentColor = TextPrimary, focusedContainerColor = Blue, focusedContentColor = Color.White),
-    ) { Text(label, fontSize = 18.sp) }
+        shape = ButtonDefaults.shape(RoundedCornerShape(22.dp)),
+        colors = ButtonDefaults.colors(containerColor = Color.White, contentColor = Accent, focusedContainerColor = Blue, focusedContentColor = Color.White),
+        border = ButtonDefaults.border(border = Border(BorderStroke(1.dp, Line), shape = RoundedCornerShape(22.dp))),
+        contentPadding = PaddingValues(horizontal = 21.dp, vertical = 10.dp),
+    ) {
+        if (heart) Heart(Modifier.padding(end = 9.dp))
+        Text(label, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+    }
+}
+
+/** An outlined heart in the button's text color. */
+@Composable
+private fun Heart(modifier: Modifier = Modifier) {
+    val color = LocalContentColor.current
+    Canvas(modifier.size(18.dp, 17.dp)) {
+        val w = size.width; val h = size.height
+        val heart = Path().apply {
+            moveTo(w / 2, h * 0.92f)
+            cubicTo(w * 0.1f, h * 0.62f, -w * 0.02f, h * 0.28f, w * 0.26f, h * 0.1f)
+            cubicTo(w * 0.4f, h * 0.02f, w * 0.48f, h * 0.12f, w / 2, h * 0.22f)
+            cubicTo(w * 0.52f, h * 0.12f, w * 0.6f, h * 0.02f, w * 0.74f, h * 0.1f)
+            cubicTo(w * 1.02f, h * 0.28f, w * 0.9f, h * 0.62f, w / 2, h * 0.92f)
+            close()
+        }
+        drawPath(heart, color, style = Stroke(width = 1.8.dp.toPx(), join = StrokeJoin.Round))
+    }
 }
 
 /**
@@ -257,7 +359,7 @@ private fun Droplet(receiving: Boolean) {
         label = "scale",
     )
     val gradient = remember { Brush.verticalGradient(listOf(Blue, Violet)) }
-    Canvas(Modifier.size(width = 52.dp, height = 72.dp).graphicsLayer { scaleX = scale; scaleY = scale }) {
+    Canvas(Modifier.size(width = 46.dp, height = 64.dp).graphicsLayer { scaleX = scale; scaleY = scale }) {
         // The icon's droplet, drawn in its 1024-unit space and cropped to x 282..742, y 180..815.
         val k = size.height / 635f
         fun p(x: Float, y: Float) = Offset((x - 282f) * k, (y - 180f) * k)
@@ -289,7 +391,7 @@ private fun Preview(uri: Uri) {
             it.asImageBitmap(),
             contentDescription = null,
             contentScale = ContentScale.Fit,
-            modifier = Modifier.fillMaxWidth().heightIn(max = 420.dp).padding(bottom = 8.dp).clip(RoundedCornerShape(12.dp)),
+            modifier = Modifier.width(320.dp).heightIn(max = 220.dp).clip(RoundedCornerShape(16.dp)),
         )
     }
 }
@@ -302,16 +404,16 @@ private fun decodeSampled(context: Context, uri: Uri, maxSide: Int): Bitmap? {
     return context.contentResolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, BitmapFactory.Options().apply { inSampleSize = sample }) }
 }
 
-/** The QR matrix comes from zxing; drawing 25×25 squares on one Canvas beats making a Bitmap. */
+/** The QR matrix comes from zxing; drawing its squares on one Canvas beats making a Bitmap. */
 @Composable
 private fun QrCode(content: String, size: Dp) {
     val matrix = remember(content) {
         runCatching { QRCodeWriter().encode(content, BarcodeFormat.QR_CODE, 25, 25, mapOf(EncodeHintType.MARGIN to 0)) }.getOrNull()
     } ?: return
-    Canvas(Modifier.size(size).clip(RoundedCornerShape(12.dp)).background(Color.White).padding(10.dp)) {
+    Canvas(Modifier.size(size)) {
         val cell = this.size.width / matrix.width
         for (x in 0 until matrix.width) for (y in 0 until matrix.height) {
-            if (matrix.get(x, y)) drawRect(Color.Black, Offset(x * cell, y * cell), Size(cell, cell))
+            if (matrix.get(x, y)) drawRect(Ink, Offset(x * cell, y * cell), Size(cell, cell))
         }
     }
 }
@@ -333,24 +435,34 @@ private fun SupportScreen(onClose: () -> Unit) {
     val ukrainian = LocalConfiguration.current.locales[0].language == "uk"
     val options = if (ukrainian) listOf(MONO, KOFI, BMC) else listOf(KOFI, BMC, MONO)
     val focus = remember { FocusRequester() }
-    Box(Modifier.fillMaxSize().background(Bg), contentAlignment = Alignment.Center) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(stringResource(R.string.support), color = TextPrimary, fontSize = 36.sp, fontWeight = FontWeight.SemiBold)
-            Text(stringResource(R.string.support_lead), color = TextMuted, fontSize = 18.sp, modifier = Modifier.padding(top = 8.dp, bottom = 32.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(40.dp)) {
+    Room {
+        Column(Modifier.fillMaxSize().padding(horizontal = 64.dp, vertical = 40.dp)) {
+            Header(receiving = false, title = stringResource(R.string.support))
+            Text(stringResource(R.string.support_lead), color = Muted, fontSize = 18.sp, modifier = Modifier.padding(top = 6.dp))
+            Row(
+                Modifier.weight(1f).fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(28.dp, Alignment.CenterHorizontally),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 options.forEach { option ->
-                    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.width(220.dp)) {
-                        QrCode(option.url, 200.dp)
-                        Text(stringResource(option.name), color = TextPrimary, fontSize = 20.sp, modifier = Modifier.padding(top = 14.dp))
-                        Text(stringResource(option.note), color = TextMuted, fontSize = 15.sp)
+                    Column(
+                        Modifier.width(230.dp).clip(RoundedCornerShape(24.dp)).background(Card).padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        Box(Modifier.clip(RoundedCornerShape(16.dp)).background(Color.White).padding(10.dp)) { QrCode(option.url, 140.dp) }
+                        Text(stringResource(option.name), color = Ink, fontSize = 18.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(top = 12.dp))
+                        Text(stringResource(option.note), color = Muted, fontSize = 14.sp, textAlign = TextAlign.Center)
                     }
                 }
             }
-            Box(Modifier.padding(top = 36.dp)) { Action(stringResource(R.string.close), focus, onClose) }
+            Row(Modifier.fillMaxWidth().height(56.dp), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
+                Action(stringResource(R.string.close), focus, onClick = onClose)
+            }
         }
     }
     FocusOnShow(focus, Unit)
 }
+
 
 /**
  * Video and audio go to the player as a file path, the way file managers open them. Handed the

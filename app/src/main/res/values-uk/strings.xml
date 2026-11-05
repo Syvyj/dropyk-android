@@ -24,4 +24,7 @@
     <string name="support_mono">Банка Monobank</string>
     <string name="support_mono_note">Картка, Apple Pay, Google Pay</string>
     <string name="close">Закрити</string>
+    <string name="send_title">Надішліть на телевізор</string>
+    <string name="url_hint">Або відкрийте цю адресу на телефоні:</string>
+    <string name="link_title">Посилання з телефона</string>
 </resources>
