@@ -8,6 +8,8 @@ Send files and links from your phone to an Android TV or Google TV over your hom
 
 `Android TV / Google TV` `Android 7.0+` `~1 MB` `GPL-3.0`
 
+For receiving on a Mac from an Android phone, see [Dropyk for Mac](https://github.com/Syvyj/dropyk-mac).
+
 ## How it works
 
 1. **Open** Dropyk on the TV. It shows a QR code.

@@ -103,6 +103,12 @@ main > section { max-width: var(--max); margin: 0 auto; padding: clamp(64px, 8vw
 .where-card { background: var(--card); border-radius: 18px; padding: 20px 22px; display: grid; gap: 6px; }
 .where-card span { color: var(--muted); }
 
+.mac { display: grid; grid-template-columns: auto 1fr; gap: 28px; align-items: center; }
+.mac > div { background: var(--card); border-radius: 22px; padding: 28px 32px; }
+.mac p { color: var(--muted); margin: 10px 0 0; max-width: 62ch; }
+.mac .cta { margin-top: 20px; }
+.mac img { width: 120px; height: 120px; filter: drop-shadow(0 14px 26px rgba(40, 36, 100, .2)); }
+
 .install ol { list-style: none; counter-reset: s; padding: 0; margin: 28px 0 18px; display: grid; gap: 12px; max-width: 760px; }
 .install li { counter-increment: s; background: var(--card); border-radius: 18px; padding: 18px 22px 18px 64px; position: relative; color: var(--muted); }
 .install li::before { content: counter(s); position: absolute; left: 20px; top: 17px; width: 30px; height: 30px; border-radius: 50%;
@@ -129,7 +135,7 @@ main > section { max-width: var(--max); margin: 0 auto; padding: clamp(64px, 8vw
 
 @media (max-width: 920px) {
   .nav nav { display: none; }
-  .hero, .feature, .support { grid-template-columns: 1fr; }
+  .hero, .feature, .support, .mac { grid-template-columns: 1fr; }
   .steps, .private ul { grid-template-columns: 1fr; }
   .feature > div:last-child { order: -1; }
 }

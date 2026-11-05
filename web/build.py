@@ -11,6 +11,8 @@ SITE = "https://dropyk.syvyj.dev/"
 REPO = "https://github.com/Syvyj/dropyk-android"
 # The newest release's APK; the release must carry an asset with exactly this name.
 DOWNLOAD = REPO + "/releases/latest/download/dropyk.apk"
+MAC_REPO = "https://github.com/Syvyj/dropyk-mac"
+MAC_DOWNLOAD = MAC_REPO + "/releases/latest/download/Dropyk.zip"
 
 # Donation links — the same as Likhtar's and the app's support screen. Monobank first in Ukrainian.
 DONATE = [
@@ -40,6 +42,7 @@ def render(template, lang):
     ver = hashlib.sha1(open(os.path.join(HERE, "style.css"), "rb").read()).hexdigest()[:8]
     values = {
         "ver": ver, "lang": lang, "root": root, "download": DOWNLOAD, "repo": REPO,
+        "mac_download": MAC_DOWNLOAD, "mac_repo": MAC_REPO,
         "home": root + ("" if lang == "en" else "uk/"),
         "other": root + ("uk/" if lang == "en" else ""),
         "url": SITE + ("" if lang == "en" else "uk/"),

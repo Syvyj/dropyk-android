@@ -8,6 +8,8 @@
 
 `Android TV / Google TV` `Android 7.0+` `~1 МБ` `GPL-3.0`
 
+Щоб приймати файли з Android-телефона на Mac, є [Dropyk для Mac](https://github.com/Syvyj/dropyk-mac).
+
 ## Як це працює
 
 1. **Відкрийте** Dropyk на телевізорі. Він покаже QR-код.
