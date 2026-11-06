@@ -3,19 +3,25 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#ECE9FA">
+<meta name="theme-color" content="#ECE9FA" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#12142B" media="(prefers-color-scheme: dark)">
 <title>Dropyk</title>
 <!-- Served by the TV itself, so paths are relative. File: raw POST body to upload?name=, with progress; link: POST link. -->
 <style>
   :root { --bg:#ECE9FA; --card:#FFFFFF; --line:#DCD7F2; --ink:#161B3D; --muted:#555C7D; --accent:#2E5BE0;
-          --blue:#3D7BF7; --violet:#7A4CF0; --soft:#E3E7FD; --ok:#18794E; --bad:#B42318; }
+          --blue:#3D7BF7; --violet:#7A4CF0; --soft:#E3E7FD; --ok:#18794E; --bad:#B42318; --slash:#9AA0BC; color-scheme:light dark; }
+  /* Follows the phone's theme, in the same colors as the TV's dark one. */
+  @media (prefers-color-scheme:dark) {
+    :root { --bg:#12142B; --card:#1E2246; --line:#353B6B; --ink:#ECEBFA; --muted:#A6ABCB; --accent:#93ADFF;
+            --soft:#2A3060; --ok:#5BD18B; --bad:#FF7A6B; --slash:#5F6590; }
+  }
   * { box-sizing:border-box; }
   body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.45 system-ui,-apple-system,Roboto,sans-serif; }
   main { max-width:520px; margin:0 auto; padding:22px 18px 44px; }
   header { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
   header svg { width:24px; height:33px; flex:none; }
   .brand { font-size:21px; font-weight:750; letter-spacing:-.01em; }
-  .slash { color:#9AA0BC; font-size:20px; }
+  .slash { color:var(--slash); font-size:20px; }
   h1 { margin:0; font-size:17px; font-weight:700; }
   .sub { color:var(--muted); font-size:15px; margin:0 0 22px; }
   .pick { display:flex; align-items:center; justify-content:center; width:100%; min-height:58px; padding:14px; border-radius:16px;

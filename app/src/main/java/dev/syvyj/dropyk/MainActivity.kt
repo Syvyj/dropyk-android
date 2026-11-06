@@ -42,6 +42,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.core.content.edit
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.withFrameNanos
@@ -102,25 +103,41 @@ class DropykApp : Application() {
 }
 
 
-// Light lavender room, near-white cards, navy ink. Pure white only behind the QR — a big white
-// screen glares in a dark living room, and the scanner needs the contrast there anyway.
-private val Bg = Color(0xFFECE9FA)
-private val Blob = Color(0xFFE3DEF7)
-private val Card = Color(0xFFF8F7FD)
-private val Line = Color(0xFFDCD7F2)
-private val Ink = Color(0xFF161B3D)
-private val Muted = Color(0xFF555C7D)
-private val Accent = Color(0xFF2E5BE0)
+/**
+ * Dark by default, like the TV around it: a light screen glares in a dark living room. The light
+ * one is a lavender room with near-white cards. Either way the QR sits on pure white, which the
+ * scanner needs. Colors are read through [Theme.dark], so switching recomposes everything.
+ */
+private object Theme {
+    var dark by mutableStateOf(true)
+    fun load(context: Context) { dark = context.getSharedPreferences("drop", Context.MODE_PRIVATE).getBoolean("dark", true) }
+    fun set(context: Context, on: Boolean) {
+        dark = on
+        context.getSharedPreferences("drop", Context.MODE_PRIVATE).edit { putBoolean("dark", on) }
+    }
+}
+
+private fun pick(light: Long, dark: Long) = Color(if (Theme.dark) dark else light)
+private val Bg get() = pick(0xFFECE9FA, 0xFF12142B)
+private val Blob get() = pick(0xFFE3DEF7, 0xFF1A1D3D)
+private val Card get() = pick(0xFFF8F7FD, 0xFF1E2246)
+private val Raised get() = pick(0xFFFFFFFF, 0xFF282D58)
+private val Line get() = pick(0xFFDCD7F2, 0xFF353B6B)
+private val Ink get() = pick(0xFF161B3D, 0xFFECEBFA)
+private val Muted get() = pick(0xFF555C7D, 0xFFA6ABCB)
+private val Accent get() = pick(0xFF2E5BE0, 0xFF93ADFF)
+private val Ok get() = pick(0xFF18794E, 0xFF5BD18B)
+private val Bad get() = pick(0xFFB42318, 0xFFFF7A6B)
 private val Blue = Color(0xFF3D7BF7)
 private val Violet = Color(0xFF7A4CF0)
-private val Ok = Color(0xFF18794E)
-private val Bad = Color(0xFFB42318)
+private val QrInk = Color(0xFF161B3D)
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // A big upload takes minutes; the screensaver shouldn't hide the progress.
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        Theme.load(this)
         setContent { DropScreen() }
         // Turned on before and the process was gone (an update, a reboot): bring it back.
         if (Background.isOn(this)) Background.start(this)
@@ -204,6 +221,8 @@ private fun DropScreen() {
                         Background.set(context, background)
                         if (background && !Background.canPopUp(context)) Background.askToPopUp(context)
                     }
+                    Box(Modifier.width(14.dp))
+                    Action(stringResource(if (Theme.dark) R.string.theme_dark else R.string.theme_light), null) { Theme.set(context, !Theme.dark) }
                     Box(Modifier.width(14.dp))
                 }
                 if (idle) Action(stringResource(R.string.support), supportFocus, heart = true) { support = true }
@@ -356,7 +375,7 @@ private fun Action(label: String, focus: FocusRequester?, heart: Boolean = false
         onClick = onClick,
         modifier = if (focus != null) Modifier.focusRequester(focus) else Modifier,
         shape = ButtonDefaults.shape(RoundedCornerShape(22.dp)),
-        colors = ButtonDefaults.colors(containerColor = Color.White, contentColor = Accent, focusedContainerColor = Blue, focusedContentColor = Color.White),
+        colors = ButtonDefaults.colors(containerColor = Raised, contentColor = Accent, focusedContainerColor = Blue, focusedContentColor = Color.White),
         border = ButtonDefaults.border(border = Border(BorderStroke(1.dp, Line), shape = RoundedCornerShape(22.dp))),
         contentPadding = PaddingValues(horizontal = 21.dp, vertical = 10.dp),
     ) {
@@ -465,7 +484,7 @@ private fun QrCode(content: String, size: Dp) {
     Canvas(Modifier.size(size)) {
         val cell = this.size.width / matrix.width
         for (x in 0 until matrix.width) for (y in 0 until matrix.height) {
-            if (matrix.get(x, y)) drawRect(Ink, Offset(x * cell, y * cell), Size(cell, cell))
+            if (matrix.get(x, y)) drawRect(QrInk, Offset(x * cell, y * cell), Size(cell, cell))
         }
     }
 }

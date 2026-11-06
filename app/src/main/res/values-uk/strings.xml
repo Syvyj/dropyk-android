@@ -46,4 +46,6 @@
     <string name="background_channel">Прийом у фоні</string>
     <string name="background_title">Dropyk приймає файли</string>
     <string name="background_text">Телефони можуть надсилати на цей телевізор, навіть коли Dropyk закритий</string>
+    <string name="theme_dark">Тема: темна</string>
+    <string name="theme_light">Тема: світла</string>
 </resources>

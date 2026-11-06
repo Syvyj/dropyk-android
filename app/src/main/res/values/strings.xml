@@ -47,4 +47,6 @@
     <string name="background_channel">Receiving in background</string>
     <string name="background_title">Dropyk is receiving</string>
     <string name="background_text">Phones can send to this TV even while Dropyk is closed</string>
+    <string name="theme_dark">Theme: dark</string>
+    <string name="theme_light">Theme: light</string>
 </resources>

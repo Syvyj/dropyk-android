@@ -15,9 +15,27 @@
   --blue: #3d7bf7;
   --violet: #7a4cf0;
   --grad: linear-gradient(135deg, var(--blue), var(--violet));
+  --glass: rgba(236, 233, 250, .86);
+  --glass-soft: rgba(255, 255, 255, .6);
+  --chip: #e4e0fb;
+  --chip-ink: #3b2fa0;
+  --pill: #dfdaf8;
+  --pill-ink: #2c2f7a;
+  --icon: #2c2f6a;
+  color-scheme: light dark;
   --font: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
   --pad: clamp(16px, 5vw, 64px);
   --max: 1200px;
+}
+
+/* Follows the visitor's theme, in the same colors as the TV app's dark one. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #12142b; --blob: #1a1d3d; --card: #1e2246; --soft: #262b55; --line: #353b6b;
+    --ink: #ecebfa; --muted: #a6abcb; --accent: #93adff;
+    --glass: rgba(18, 20, 43, .86); --glass-soft: rgba(30, 34, 70, .7);
+    --chip: #2a3060; --chip-ink: #c9c2ff; --pill: #2a3060; --pill-ink: #c9c2ff; --icon: #c9c2ff;
+  }
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -35,7 +53,7 @@ p { margin: 0; }
 .lead { font-size: clamp(18px, 1.55vw, 21px); color: var(--muted); max-width: 46ch; }
 .small { font-size: 15px; color: var(--muted); }
 
-.skip { position: absolute; left: -999px; top: 8px; background: var(--ink); color: #fff; padding: 8px 12px; border-radius: 8px; z-index: 10; }
+.skip { position: absolute; left: -999px; top: 8px; background: var(--ink); color: var(--bg); padding: 8px 12px; border-radius: 8px; z-index: 10; }
 .skip:focus { left: 8px; }
 a:focus-visible, .btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; border-radius: 10px; }
 
@@ -49,7 +67,7 @@ a:focus-visible, .btn:focus-visible { outline: 3px solid var(--accent); outline-
 .text-link:hover { text-decoration: underline; }
 
 .nav { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 40px; padding: 14px var(--pad);
-       background: rgba(236, 233, 250, .86); backdrop-filter: blur(12px); }
+       background: var(--glass); backdrop-filter: blur(12px); }
 .brand { display: inline-flex; align-items: center; gap: 10px; font-weight: 800; font-size: 24px; color: var(--ink); text-decoration: none; letter-spacing: -.02em; }
 .brand svg { width: 26px; height: 36px; }
 .nav nav { display: flex; gap: 32px; margin-right: auto; }
@@ -62,7 +80,7 @@ main > section { max-width: var(--max); margin: 0 auto; padding: clamp(64px, 8vw
 
 /* Hero: the copy on the left, the real TV and phone screens on the right. */
 .hero { display: grid; grid-template-columns: 1.1fr 1fr; gap: clamp(28px, 4vw, 56px); align-items: center; padding-top: clamp(28px, 5vw, 64px) !important; }
-.pill { display: inline-block; background: #dfdaf8; color: #2c2f7a; font-weight: 700; font-size: 15px; padding: 6px 14px; border-radius: 999px; margin-bottom: 22px; }
+.pill { display: inline-block; background: var(--pill); color: var(--pill-ink); font-weight: 700; font-size: 15px; padding: 6px 14px; border-radius: 999px; margin-bottom: 22px; }
 .hero h1 { margin-bottom: 20px; }
 .cta { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 30px; margin-top: 32px; }
 
@@ -79,7 +97,7 @@ main > section { max-width: var(--max); margin: 0 auto; padding: clamp(64px, 8vw
 .phone img { border-radius: 20px; }
 
 .strip { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px 0; max-width: 860px; margin: clamp(40px, 6vw, 64px) auto 0;
-         padding: 14px 18px; list-style: none; background: rgba(255, 255, 255, .6); border-radius: 999px; }
+         padding: 14px 18px; list-style: none; background: var(--glass-soft); border-radius: 999px; }
 .strip li { display: inline-flex; align-items: center; gap: 12px; padding: 4px 28px; font-weight: 700; font-size: 18px; }
 .strip li + li { border-left: 1px solid var(--line); }
 .strip svg { width: 26px; height: 26px; color: var(--accent); }
@@ -89,8 +107,8 @@ main > section { max-width: var(--max); margin: 0 auto; padding: clamp(64px, 8vw
 .steps li { display: grid; grid-template-columns: auto 1fr; gap: 14px 18px; align-items: start; background: var(--card); border-radius: 22px;
             padding: 24px; position: relative; }
 .num { position: absolute; top: 18px; left: 18px; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center;
-       background: #e4e0fb; color: #3b2fa0; font-weight: 800; font-size: 16px; }
-.icon { width: 76px; height: 66px; margin-top: 34px; color: #2c2f6a; }
+       background: var(--chip); color: var(--chip-ink); font-weight: 800; font-size: 16px; }
+.icon { width: 76px; height: 66px; margin-top: 34px; color: var(--icon); }
 .steps h3 { margin: 10px 0 6px; }
 .steps p { color: var(--muted); }
 
@@ -106,7 +124,7 @@ main > section { max-width: var(--max); margin: 0 auto; padding: clamp(64px, 8vw
 .qs-card b { font-size: 22px; }
 .qs-card > span:nth-of-type(2) { color: var(--muted); }
 .qs-buttons { display: flex; gap: 12px; margin-top: 12px; }
-.qs-buttons i { font-style: normal; font-weight: 700; color: var(--accent); background: #fff; border: 1px solid var(--line); border-radius: 22px; padding: 8px 18px; font-size: 15px; }
+.qs-buttons i { font-style: normal; font-weight: 700; color: var(--accent); background: var(--card); border: 1px solid var(--line); border-radius: 22px; padding: 8px 18px; font-size: 15px; }
 .qs-buttons i.on { background: var(--blue); border-color: var(--blue); color: #fff; }
 .where-card { background: var(--card); border-radius: 18px; padding: 20px 22px; display: grid; gap: 6px; }
 .where-card span { color: var(--muted); }
@@ -124,7 +142,7 @@ main > section { max-width: var(--max); margin: 0 auto; padding: clamp(64px, 8vw
 .install ol { list-style: none; counter-reset: s; padding: 0; margin: 28px 0 18px; display: grid; gap: 12px; max-width: 760px; }
 .install li { counter-increment: s; background: var(--card); border-radius: 18px; padding: 18px 22px 18px 64px; position: relative; color: var(--muted); }
 .install li::before { content: counter(s); position: absolute; left: 20px; top: 17px; width: 30px; height: 30px; border-radius: 50%;
-                      display: grid; place-items: center; background: #e4e0fb; color: #3b2fa0; font-weight: 800; font-size: 15px; }
+                      display: grid; place-items: center; background: var(--chip); color: var(--chip-ink); font-weight: 800; font-size: 15px; }
 .install li b { color: var(--ink); }
 
 .private ul { list-style: none; padding: 0; margin: 28px 0 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }

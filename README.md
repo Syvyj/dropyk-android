@@ -27,6 +27,7 @@ From an Android phone it's shorter: with Dropyk open on the TV, **Share → Quic
 - **One press with the remote** — a video plays, an APK installs, a photo shows on screen, a link opens.
 - **You choose where files go** — *Downloads* puts everything in `Download/Dropyk`; *By type* puts videos in `Movies/Dropyk`, photos in `Pictures/Dropyk`, music in `Music/Dropyk` and the rest in `Download/Dropyk`. The phone remembers the choice.
 - **Receive in background** — a switch on the main screen keeps Dropyk receiving while it's closed, starts it after a reboot, and brings it to the screen when something arrives (it asks for *Display over other apps* for that).
+- **Dark or light** — dark by default, like the TV around it; one button switches. The phone page and the site follow the phone's theme.
 - **Updates itself** — once a day it checks GitHub and offers *Update to …* on the TV.
 - **English and Ukrainian** on the TV and on the phone page.
 
