@@ -29,7 +29,7 @@ import org.json.JSONObject
 data class AppRelease(val version: String, val apkUrl: String)
 
 /**
- * Updates from GitHub without a store, the same way Likhtar does it: once a day ask
+ * Updates from GitHub without a store, the same way Likhtar does it: every few hours ask
  * `releases/latest` (one request, nothing about the person), and if it's newer, offer it.
  * "Update" downloads the APK into the cache and opens the system installer — Android won't
  * install silently, and rightly so.
@@ -85,20 +85,21 @@ object Update {
 
     private fun canInstall() = Build.VERSION.SDK_INT < Build.VERSION_CODES.O || context.packageManager.canRequestPackageInstalls()
 
-    /** Ask GitHub if a day has passed since the last answer. */
-    suspend fun check() = withContext(Dispatchers.IO) {
+    /** Ask GitHub if [CHECK_MS] has passed since the last answer, or right away with [force]. False if GitHub didn't answer. */
+    suspend fun check(force: Boolean = false): Boolean = withContext(Dispatchers.IO) {
         val now = System.currentTimeMillis()
-        if (now - prefs.getLong(KEY_CHECKED, 0) < CHECK_MS) return@withContext
+        if (!force && now - prefs.getLong(KEY_CHECKED, 0) < CHECK_MS) return@withContext true
         val result = runCatching {
             get(LATEST, TIMEOUT_MS) { c ->
                 if (c.responseCode != 200) error("GitHub ${c.responseCode}") else parse(c.inputStream.bufferedReader().readText())
             }
         }.onFailure { Log.w(TAG, "update check", it) }
         // No answer (no network, rate limit) isn't "checked": the next start asks again.
-        if (result.isFailure) return@withContext
+        if (result.isFailure) return@withContext false
         val fresh = result.getOrNull()?.takeIf { newer(it.version, installed) }
         prefs.edit { putLong(KEY_CHECKED, now).putString(KEY_RELEASE, fresh?.let(::encode)) }
         _available.value = fresh
+        true
     }
 
     /** Download the APK and open the installer; without the install permission, ask for it first. */
@@ -167,7 +168,7 @@ object Update {
     private const val TAG = "DropykUpdate"
     private const val LATEST = "https://api.github.com/repos/Syvyj/dropyk-android/releases/latest"
     private const val APK_NAME = "dropyk.apk"
-    private const val CHECK_MS = 24 * 60 * 60_000L
+    private const val CHECK_MS = 6 * 60 * 60_000L
     private const val TIMEOUT_MS = 15_000
     private const val DOWNLOAD_TIMEOUT_MS = 120_000
     private const val KEY_CHECKED = "checked_at"

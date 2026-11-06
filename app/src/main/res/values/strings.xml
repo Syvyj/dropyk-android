@@ -30,6 +30,10 @@
     <string name="send_title">Send to TV</string>
     <string name="url_hint">Or open this address on the phone:</string>
     <string name="link_title">Link from the phone</string>
+    <string name="check_updates">Updates</string>
+    <string name="checking">Checking…</string>
+    <string name="up_to_date">Up to date</string>
+    <string name="check_failed">No connection</string>
     <string name="update_to">Update to %1$s</string>
     <string name="update_downloading">Downloading the update… %1$d%%</string>
     <string name="update_permission">Allow Dropyk to install apps, then come back — the update goes on by itself</string>
@@ -42,8 +46,8 @@
     <string name="incoming_pin">PIN %1$s — the same as on the phone?</string>
     <string name="accept">Accept</string>
     <string name="decline">Decline</string>
-    <string name="background_off">Receive in background: off</string>
-    <string name="background_on">Receive in background: on</string>
+    <string name="background_off">In background: off</string>
+    <string name="background_on">In background: on</string>
     <string name="background_channel">Receiving in background</string>
     <string name="background_title">Dropyk is receiving</string>
     <string name="background_text">Phones can send to this TV even while Dropyk is closed</string>

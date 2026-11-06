@@ -52,6 +52,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -89,6 +90,8 @@ import com.google.zxing.BarcodeFormat
 import com.google.zxing.EncodeHintType
 import com.google.zxing.qrcode.QRCodeWriter
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class DropykApp : Application() {
@@ -164,7 +167,8 @@ private fun DropScreen() {
     val updating by Update.progress.collectAsStateWithLifecycle()
     val updateError by Update.error.collectAsStateWithLifecycle()
     val awaitingPermission by Update.awaitingPermission.collectAsStateWithLifecycle()
-    LaunchedEffect(Unit) { Update.check() }
+    // On start and then hourly: a TV left on with Dropyk open still hears about a release; check() itself waits CHECK_MS between asks.
+    LaunchedEffect(Unit) { while (true) { Update.check(); delay(60 * 60_000L) } }
 
     if (support && idle) {
         BackHandler { support = false }
@@ -211,6 +215,16 @@ private fun DropScreen() {
                 val release = update
                 if (idle && release != null && updating == null) {
                     Action(stringResource(R.string.update_to, release.version), null) { Update.start(release) }
+                    Box(Modifier.width(14.dp))
+                } else if (idle && updating == null) {
+                    // null: not asked yet; then checking, up to date or no answer.
+                    var asked by remember { mutableStateOf<Int?>(null) }
+                    val scope = rememberCoroutineScope()
+                    Action(stringResource(asked ?: R.string.check_updates), null) {
+                        if (asked == R.string.checking) return@Action
+                        asked = R.string.checking
+                        scope.launch { asked = if (Update.check(force = true)) R.string.up_to_date else R.string.check_failed }
+                    }
                     Box(Modifier.width(14.dp))
                 }
                 if (idle) {

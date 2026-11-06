@@ -13,12 +13,25 @@
 <meta property="og:image" content="https://dropyk.syvyj.dev/assets/social-uk.png">
 <meta property="og:url" content="https://dropyk.syvyj.dev/uk/">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="theme-color" content="#ECE9FA" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#12142B" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#ECE9FA">
+<script>
+  // Light or dark: what the visitor picked with the button, otherwise the device's theme.
+  function theme(t) {
+    document.documentElement.dataset.theme = t;
+    document.querySelector('meta[name=theme-color]').content = t === 'dark' ? '#12142B' : '#ECE9FA';
+  }
+  function flipTheme() {
+    const t = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+    theme(t);
+    try { localStorage.theme = t; } catch (e) {}
+  }
+  let picked; try { picked = localStorage.theme; } catch (e) {}
+  theme(picked || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
+</script>
 <link rel="icon" type="image/png" sizes="32x32" href="../assets/icon-32.png">
 <link rel="apple-touch-icon" href="../assets/icon-180.png">
 <link rel="preload" href="../fonts/manrope-latin.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="../style.css?v=99eb174e">
+<link rel="stylesheet" href="../style.css?v=7d44fa94">
 </head>
 <body>
 <a class="skip" href="#main">Перейти до змісту</a>
@@ -44,6 +57,7 @@
     <a href="https://github.com/Syvyj/dropyk-android">GitHub</a>
   </nav>
   <div class="nav-tools">
+    <button class="theme" type="button" onclick="flipTheme()" aria-label="Світла чи темна тема"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg></button>
     <a class="lang" href="../" hreflang="en" lang="en">EN</a>
     <a class="btn btn-small" href="https://github.com/Syvyj/dropyk-android/releases/latest/download/dropyk.apk">Завантажити</a>
   </div>

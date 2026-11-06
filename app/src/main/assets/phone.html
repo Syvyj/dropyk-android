@@ -3,18 +3,32 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#ECE9FA" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#12142B" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#ECE9FA">
+<script>
+  // Light or dark: what the visitor picked with the button, otherwise the device's theme.
+  function theme(t) {
+    document.documentElement.dataset.theme = t;
+    document.querySelector('meta[name=theme-color]').content = t === 'dark' ? '#12142B' : '#ECE9FA';
+  }
+  function flipTheme() {
+    const t = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+    theme(t);
+    try { localStorage.theme = t; } catch (e) {}
+  }
+  let picked; try { picked = localStorage.theme; } catch (e) {}
+  theme(picked || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
+</script>
 <title>Dropyk</title>
 <!-- Served by the TV itself, so paths are relative. File: raw POST body to upload?name=, with progress; link: POST link. -->
 <style>
   :root { --bg:#ECE9FA; --card:#FFFFFF; --line:#DCD7F2; --ink:#161B3D; --muted:#555C7D; --accent:#2E5BE0;
-          --blue:#3D7BF7; --violet:#7A4CF0; --soft:#E3E7FD; --ok:#18794E; --bad:#B42318; --slash:#9AA0BC; color-scheme:light dark; }
-  /* Follows the phone's theme, in the same colors as the TV's dark one. */
-  @media (prefers-color-scheme:dark) {
-    :root { --bg:#12142B; --card:#1E2246; --line:#353B6B; --ink:#ECEBFA; --muted:#A6ABCB; --accent:#93ADFF;
+          --blue:#3D7BF7; --violet:#7A4CF0; --soft:#E3E7FD; --ok:#18794E; --bad:#B42318; --slash:#9AA0BC; color-scheme:light; }
+  /* Dark, in the same colors as the TV's: the phone's theme, or the button's pick. */
+  :root[data-theme=dark] { color-scheme:dark; --bg:#12142B; --card:#1E2246; --line:#353B6B; --ink:#ECEBFA; --muted:#A6ABCB; --accent:#93ADFF;
             --soft:#2A3060; --ok:#5BD18B; --bad:#FF7A6B; --slash:#5F6590; }
-  }
+  .theme { display:flex; align-items:center; gap:8px; margin:18px auto 0; padding:10px 14px; border:0; border-radius:12px; background:none; color:var(--muted); font:inherit; font-size:14px; font-weight:600; cursor:pointer; }
+  .theme:focus-visible { outline:3px solid var(--accent); outline-offset:2px; }
+  .theme svg { width:18px; height:18px; }
   * { box-sizing:border-box; }
   body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.45 system-ui,-apple-system,Roboto,sans-serif; }
   main { max-width:520px; margin:0 auto; padding:22px 18px 44px; }
@@ -107,6 +121,7 @@
     <p data-t="supportLead"></p>
     <div id="give"></div>
   </details>
+  <button class="theme" type="button" onclick="flipTheme()"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg><span data-t="theme"></span></button>
 </main>
 <script>
 const T = {
@@ -117,7 +132,7 @@ const T = {
     support: 'Support the author', supportLead: 'Dropyk is free and will stay free.',
     give: [['Ko-fi', 'https://ko-fi.com/syvyj', 'Card or PayPal'], ['Buy Me a Coffee', 'https://buymeacoffee.com/syvyj', 'A coffee, any amount'],
            ['Monobank jar', 'https://send.monobank.ua/jar/5juJPj142b', 'Card, Apple Pay, Google Pay']],
-    pick: 'Choose files', orLink: 'Or a link', open: 'Open', free: 'Free on TV: ', waiting: 'waiting', onTv: 'on TV',
+    pick: 'Choose files', theme: 'Light or dark', orLink: 'Or a link', open: 'Open', free: 'Free on TV: ', waiting: 'waiting', onTv: 'on TV',
     noSpace: 'not enough space', lost: 'connection lost', failed: 'error', needLink: 'Paste a link that starts with https://',
     linkOk: 'Done — confirm on the TV', linkFail: 'Could not send', gb: ' GB', mb: ' MB',
     errors: { no_space: 'not enough space on TV', busy: 'TV is receiving another file', interrupted: 'transfer interrupted',
@@ -130,7 +145,7 @@ const T = {
     support: 'Підтримати автора', supportLead: 'Dropyk безкоштовний і таким лишиться.',
     give: [['Банка Monobank', 'https://send.monobank.ua/jar/5juJPj142b', 'Картка, Apple Pay, Google Pay'],
            ['Ko-fi', 'https://ko-fi.com/syvyj', 'Картка чи PayPal'], ['Buy Me a Coffee', 'https://buymeacoffee.com/syvyj', 'Кава, будь-яка сума']],
-    pick: 'Вибрати файли', orLink: 'Або посилання', open: 'Відкрити', free: 'Вільно на телевізорі: ', waiting: 'чекає', onTv: 'на ТБ',
+    pick: 'Вибрати файли', theme: 'Світла чи темна', orLink: 'Або посилання', open: 'Відкрити', free: 'Вільно на телевізорі: ', waiting: 'чекає', onTv: 'на ТБ',
     noSpace: 'не вистачає місця', lost: 'зв\'язок обірвався', failed: 'помилка', needLink: 'Вставте посилання, що починається з https://',
     linkOk: 'Готово — підтвердіть на телевізорі', linkFail: 'Не вдалося передати', gb: ' ГБ', mb: ' МБ',
     errors: { no_space: 'не вистачає місця на ТБ', busy: 'ТБ уже приймає інший файл', interrupted: 'передачу перервано',

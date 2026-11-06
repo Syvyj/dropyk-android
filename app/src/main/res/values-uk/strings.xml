@@ -27,6 +27,10 @@
     <string name="send_title">Надішліть на телевізор</string>
     <string name="url_hint">Або відкрийте цю адресу на телефоні:</string>
     <string name="link_title">Посилання з телефона</string>
+    <string name="check_updates">Оновлення</string>
+    <string name="checking">Перевіряю…</string>
+    <string name="up_to_date">Остання версія</string>
+    <string name="check_failed">Немає зв\'язку</string>
     <string name="update_to">Оновити до %1$s</string>
     <string name="update_downloading">Завантажую оновлення… %1$d%%</string>
     <string name="update_permission">Дозвольте Dropyk встановлювати застосунки й поверніться — оновлення продовжиться саме</string>
@@ -41,8 +45,8 @@
     <string name="incoming_pin">PIN %1$s — такий самий, як на телефоні?</string>
     <string name="accept">Прийняти</string>
     <string name="decline">Відхилити</string>
-    <string name="background_off">Приймати у фоні: вимк.</string>
-    <string name="background_on">Приймати у фоні: увімк.</string>
+    <string name="background_off">У фоні: вимк.</string>
+    <string name="background_on">У фоні: увімк.</string>
     <string name="background_channel">Прийом у фоні</string>
     <string name="background_title">Dropyk приймає файли</string>
     <string name="background_text">Телефони можуть надсилати на цей телевізор, навіть коли Dropyk закритий</string>

@@ -13,8 +13,21 @@
 <meta property="og:image" content="https://dropyk.syvyj.dev/assets/social-{{lang}}.png">
 <meta property="og:url" content="{{url}}">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="theme-color" content="#ECE9FA" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#12142B" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#ECE9FA">
+<script>
+  // Light or dark: what the visitor picked with the button, otherwise the device's theme.
+  function theme(t) {
+    document.documentElement.dataset.theme = t;
+    document.querySelector('meta[name=theme-color]').content = t === 'dark' ? '#12142B' : '#ECE9FA';
+  }
+  function flipTheme() {
+    const t = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+    theme(t);
+    try { localStorage.theme = t; } catch (e) {}
+  }
+  let picked; try { picked = localStorage.theme; } catch (e) {}
+  theme(picked || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
+</script>
 <link rel="icon" type="image/png" sizes="32x32" href="{{root}}assets/icon-32.png">
 <link rel="apple-touch-icon" href="{{root}}assets/icon-180.png">
 <link rel="preload" href="{{root}}fonts/manrope-latin.woff2" as="font" type="font/woff2" crossorigin>
@@ -44,6 +57,7 @@
     <a href="{{repo}}">GitHub</a>
   </nav>
   <div class="nav-tools">
+    <button class="theme" type="button" onclick="flipTheme()" aria-label="[[Light or dark theme||Світла чи темна тема]]"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg></button>
     <a class="lang" href="{{other}}" hreflang="{{other_lang}}" lang="{{other_lang}}">[[UA||EN]]</a>
     <a class="btn btn-small" href="{{download}}">[[Download||Завантажити]]</a>
   </div>

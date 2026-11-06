@@ -14,8 +14,8 @@ android {
         applicationId = "dev.syvyj.dropyk"
         minSdk = 24
         targetSdk = 36
-        versionCode = 5
-        versionName = "0.4.1"
+        versionCode = 6
+        versionName = "0.4.2"
     }
 
     // Release key from `.env` or `-P`; without it the release build is debug-signed.
