@@ -18,6 +18,14 @@ class DropTest {
         assertEquals("video/mp4", Drop.mimeOf(long))
     }
 
+    @Test fun textOrLink() {
+        assertEquals(DropState.Link("https://youtu.be/x"), Drop.textState("https://youtu.be/x"))
+        assertEquals(DropState.Text("wifi pass 1234"), Drop.textState("wifi pass 1234"))
+        // A link with words around it is text: opening it would drop the words.
+        assertEquals(DropState.Text("see https://x.com"), Drop.textState("see https://x.com"))
+        assertEquals(DropState.Text("javascript:alert(1)"), Drop.textState("javascript:alert(1)"))
+    }
+
     @Test fun headerLines() {
         with(Drop) {
             assertEquals("GET / HTTP/1.1", "GET / HTTP/1.1\r\nHost: x\r\n".byteInputStream().line(MAX_LINE))

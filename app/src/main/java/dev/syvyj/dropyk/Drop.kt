@@ -36,13 +36,16 @@ sealed interface DropState {
     /** QR on screen, the phone hasn't opened the page yet. */
     data object Waiting : DropState
     data object Connected : DropState
-    data class Receiving(val name: String, val done: Long, val total: Long) : DropState
+    /** [cancel] stops the transfer from the TV; the partial file is removed. */
+    data class Receiving(val name: String, val done: Long, val total: Long, val cancel: (() -> Unit)? = null) : DropState
     /**
      * [uri] is the saved file, handed to the installer and viewers; [path] goes to video and audio
      * players (see MainActivity.watch); [folder] is shown to the person.
      */
     data class Received(val uri: Uri, val path: String, val name: String, val mime: String, val folder: String, val count: Int) : DropState
     data class Link(val url: String) : DropState
+    /** Text that isn't a link — a Wi‑Fi password, a code, a search — shown big, not saved. */
+    data class Text(val text: String) : DropState
     /** Quick Share from [device] asks to send [what] ([count] items); the TV shows [pin] to compare with the phone. */
     data class Incoming(val device: String, val pin: String, val what: String, val count: Int, val accept: () -> Unit, val decline: () -> Unit) : DropState
     data class Failed(val name: String) : DropState
@@ -64,11 +67,17 @@ sealed interface DropState {
 @SuppressLint("StaticFieldLeak")
 object Drop {
     private lateinit var context: Context
-    private val token: String by lazy {
-        val prefs = context.getSharedPreferences("drop", Context.MODE_PRIVATE)
-        prefs.getString("token", null) ?: ByteArray(8).also { SecureRandom().nextBytes(it) }
-            .joinToString("") { "%02x".format(it) }.also { prefs.edit { putString("token", it) } }
-    }
+    private val prefs get() = context.getSharedPreferences("drop", Context.MODE_PRIVATE)
+    @Volatile private var key: String? = null
+    /** The secret in the page's address; stable, so a bookmark keeps working, until [newToken]. */
+    private val token: String get() = key ?: synchronized(this) { key ?: (prefs.getString("token", null) ?: freshToken()).also { key = it } }
+
+    private fun freshToken() = ByteArray(8).also { SecureRandom().nextBytes(it) }
+        .joinToString("") { "%02x".format(it) }.also { prefs.edit { putString("token", it) } }
+
+    /** A new address: bookmarks, the iPhone shortcut and anyone who saw the old code can't send any more. */
+    @Synchronized
+    fun newToken() { key = freshToken() }
     /** One transfer at a time for the whole TV: the page and Quick Share share one screen and one disk. */
     private val busy = AtomicBoolean(false)
     private val received = AtomicInteger()
@@ -154,7 +163,11 @@ object Drop {
     }
 
     /** Where Quick Share saves: the phone page's last choice, Downloads until there is one. */
-    internal val sorted: Boolean get() = context.getSharedPreferences("drop", Context.MODE_PRIVATE).getBoolean("sorted", false)
+    internal val sorted: Boolean get() = prefs.getBoolean("sorted", false)
+
+    /** A link opens in a browser; anything else is shown as text. Both from the page and from Quick Share. */
+    internal fun textState(text: String): DropState =
+        if ((text.startsWith("http://") || text.startsWith("https://")) && text.none(Char::isWhitespace)) DropState.Link(text) else DropState.Text(text)
 
     /** For Quick Share: the same screen states the phone page drives. */
     internal fun show(state: DropState) { _state.value = state }
@@ -195,23 +208,25 @@ object Drop {
                 out.reply(200, "text/html", context.assets.open("phone.html").bufferedReader().readText())
             }
             method == "GET" && route == "space" -> out.reply(200, "application/json", """{"free":${free()}}""")
-            method == "POST" && route == "link" && length in 1..4096 -> {
-                val url = String(input.readExactly(length.toInt()), Charsets.UTF_8).trim()
-                if (busy.get()) {
-                    // A file or a Quick Share request is on the screen: a link would hide it.
-                    out.error(409, "busy")
-                } else if (url.startsWith("http://") || url.startsWith("https://")) {
-                    _state.value = DropState.Link(url)
-                    out.reply(200, "application/json", "{}")
-                } else {
-                    out.error(400, "not_a_link")
+            // "link" is the old name: pages opened before 0.5 still post there.
+            method == "POST" && (route == "text" || route == "link") && length > MAX_TEXT -> out.error(413, "too_long")
+            method == "POST" && (route == "text" || route == "link") && length > 0 -> {
+                val text = String(input.readExactly(length.toInt()), Charsets.UTF_8).trim()
+                when {
+                    text.isEmpty() -> out.error(400, "empty")
+                    // A file or a Quick Share request is on the screen: text would hide it.
+                    busy.get() -> out.error(409, "busy")
+                    else -> {
+                        _state.value = textState(text)
+                        out.reply(200, "application/json", "{}")
+                    }
                 }
             }
             method == "POST" && route == "upload" -> {
                 // No choice in the request (the iPhone shortcut, old bookmarks): the page's last one.
                 val sorted = if ("to" in query) query["to"] == "sorted" else this.sorted
                 // Quick Share has no page to choose on, so it follows the phone page's last choice.
-                if ("to" in query) context.getSharedPreferences("drop", Context.MODE_PRIVATE).edit { putBoolean("sorted", sorted) }
+                if ("to" in query) prefs.edit { putBoolean("sorted", sorted) }
                 upload(input, out, query["name"].orEmpty(), length, sorted)
             }
             else -> out.reply(404, "text/plain", "Not found")
@@ -229,12 +244,15 @@ object Drop {
             Log.w(TAG, "create $name", it)
             return out.error(500, "cant_create")
         }
+        // Cancel on the TV: the loop stops at the next chunk, the partial file goes, the QR comes back.
+        val canceled = AtomicBoolean(false)
+        val cancel = { canceled.set(true) }
         try {
             var done = 0L
             var shownAt = 0L
             (context.contentResolver.openOutputStream(target.uri) ?: error("no stream")).buffered(256 * 1024).use { sink ->
                 val buf = ByteArray(256 * 1024)
-                while (done < length) {
+                while (done < length && !canceled.get()) {
                     val n = input.read(buf, 0, minOf(buf.size.toLong(), length - done).toInt())
                     if (n < 0) break
                     sink.write(buf, 0, n)
@@ -244,12 +262,16 @@ object Drop {
                     val now = System.currentTimeMillis()
                     if (now - shownAt >= PROGRESS_EVERY_MS || done == length) {
                         shownAt = now
-                        _state.value = DropState.Receiving(target.name, done, length)
+                        _state.value = DropState.Receiving(target.name, done, length, cancel)
                     }
                 }
             }
             if (done < length) {
                 discard(target)
+                if (canceled.get()) {
+                    _state.value = DropState.Waiting
+                    return out.error(409, "canceled")
+                }
                 _state.value = DropState.Failed(target.name)
                 return out.error(400, "interrupted")
             }
@@ -359,6 +381,8 @@ object Drop {
     /** Enough for a file name of 120 characters, percent-encoded twice over. */
     internal const val MAX_LINE = 8 * 1024
     private const val MAX_HEADERS = 64
+    /** Text from the page or Quick Share shown on screen; longer Quick Share text is saved as a .txt. */
+    internal const val MAX_TEXT = 4096
     /** Leave the system 200 MB: a box filled to the brim slows down and can't update. */
     internal const val MARGIN = 200L * 1024 * 1024
     const val FOLDER = "Dropyk"

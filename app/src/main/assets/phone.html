@@ -45,6 +45,11 @@
           box-shadow:0 8px 22px rgba(61,123,247,.28); }
   .pick:focus-within { outline:3px solid var(--accent); outline-offset:3px; }
   .pick input { position:absolute; opacity:0; width:1px; height:1px; }
+  .pick small { display:none; font-size:14px; font-weight:600; opacity:.85; margin-left:8px; }
+  /* A computer with a mouse: files can be dropped anywhere on the page. */
+  @media (hover:hover) and (pointer:fine) { .pick small { display:inline; } }
+  .dragging .pick { outline:3px dashed var(--accent); outline-offset:4px; }
+  .stop { display:block; margin:12px auto 0; border:0; border-radius:12px; padding:10px 16px; background:var(--soft); color:var(--bad); font:inherit; font-size:14px; font-weight:700; }
   .free { color:var(--ink); font-size:14px; margin:12px 2px 0; }
   .seg { display:flex; gap:4px; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:4px; margin:16px 0 0; }
   .seg button { flex:1; border:0; border-radius:10px; padding:10px 8px; background:transparent; color:var(--ink); font:inherit; font-size:14px; font-weight:600; }
@@ -101,17 +106,18 @@
     <span class="brand">Dropyk</span><span class="slash" aria-hidden="true">/</span><h1 data-t="title"></h1>
   </header>
   <p class="sub" data-t="sub"></p>
-  <label class="pick"><span data-t="pick"></span><input id="files" type="file" multiple></label>
+  <label class="pick"><span data-t="pick"></span><small data-t="drop"></small><input id="files" type="file" multiple></label>
   <div class="free" id="free"></div>
   <div class="seg" role="radiogroup">
     <button type="button" data-to="downloads" data-t="toDownloads"></button>
     <button type="button" data-to="sorted" data-t="toSorted"></button>
   </div>
   <div class="where" id="where"></div>
+  <button class="stop" id="stop" type="button" data-t="stop" hidden></button>
   <ul id="list"></ul>
   <h2 data-t="orLink"></h2>
   <form class="link" id="linkForm">
-    <input id="url" type="url" inputmode="url" placeholder="https://youtu.be/…" autocomplete="off">
+    <input id="url" type="text" data-t-placeholder="placeholder" autocomplete="off" autocapitalize="off" spellcheck="false">
     <button type="submit" data-t="open"></button>
   </form>
   <div class="note" id="note"></div>
@@ -134,11 +140,13 @@ const T = {
     support: 'Support the author', supportLead: 'Dropyk is free and will stay free.',
     give: [['Ko-fi', 'https://ko-fi.com/syvyj', 'Card or PayPal'], ['Buy Me a Coffee', 'https://buymeacoffee.com/syvyj', 'A coffee, any amount'],
            ['Monobank jar', 'https://send.monobank.ua/jar/5juJPj142b', 'Card, Apple Pay, Google Pay']],
-    pick: 'Choose files', theme: 'Light or dark', orLink: 'Or a link', open: 'Open', free: 'Free on TV: ', waiting: 'waiting', onTv: 'on TV',
-    noSpace: 'not enough space', lost: 'connection lost', failed: 'error', needLink: 'Paste a link that starts with https://',
-    linkOk: 'Done — confirm on the TV', linkFail: 'Could not send', gb: ' GB', mb: ' MB',
+    pick: 'Choose files', drop: 'or drop them here', theme: 'Light or dark', orLink: 'Or a link or text', open: 'Send', free: 'Free on TV: ', waiting: 'waiting', onTv: 'on TV',
+    placeholder: 'https://youtu.be/… or any text', stop: 'Stop sending', canceled: 'canceled',
+    noSpace: 'not enough space', lost: 'connection lost', failed: 'error', needLink: 'Type a link or some text',
+    linkOk: 'Done — it\'s on the TV', linkFail: 'Could not send', gb: ' GB', mb: ' MB',
     errors: { no_space: 'not enough space on TV', busy: 'TV is receiving another file', interrupted: 'transfer interrupted',
-              cant_create: 'TV could not create the file', unknown_size: 'unknown size', not_a_link: 'not a link' },
+              cant_create: 'TV could not create the file', unknown_size: 'unknown size', canceled: 'canceled on TV',
+              too_long: 'too long for the screen', empty: 'nothing to send' },
   },
   uk: {
     title: 'Передати на телевізор', sub: 'Відео, фото чи APK — телевізор запропонує, що з ним зробити. Цю сторінку можна зберегти в закладки.',
@@ -147,16 +155,19 @@ const T = {
     support: 'Підтримати автора', supportLead: 'Dropyk безкоштовний і таким лишиться.',
     give: [['Банка Monobank', 'https://send.monobank.ua/jar/5juJPj142b', 'Картка, Apple Pay, Google Pay'],
            ['Ko-fi', 'https://ko-fi.com/syvyj', 'Картка чи PayPal'], ['Buy Me a Coffee', 'https://buymeacoffee.com/syvyj', 'Кава, будь-яка сума']],
-    pick: 'Вибрати файли', theme: 'Світла чи темна', orLink: 'Або посилання', open: 'Відкрити', free: 'Вільно на телевізорі: ', waiting: 'чекає', onTv: 'на ТБ',
-    noSpace: 'не вистачає місця', lost: 'зв\'язок обірвався', failed: 'помилка', needLink: 'Вставте посилання, що починається з https://',
-    linkOk: 'Готово — підтвердіть на телевізорі', linkFail: 'Не вдалося передати', gb: ' ГБ', mb: ' МБ',
+    pick: 'Вибрати файли', drop: 'або перетягніть сюди', theme: 'Світла чи темна', orLink: 'Або посилання чи текст', open: 'Надіслати', free: 'Вільно на телевізорі: ', waiting: 'чекає', onTv: 'на ТБ',
+    placeholder: 'https://youtu.be/… або будь-який текст', stop: 'Зупинити надсилання', canceled: 'скасовано',
+    noSpace: 'не вистачає місця', lost: 'зв\'язок обірвався', failed: 'помилка', needLink: 'Введіть посилання чи текст',
+    linkOk: 'Готово — уже на телевізорі', linkFail: 'Не вдалося передати', gb: ' ГБ', mb: ' МБ',
     errors: { no_space: 'не вистачає місця на ТБ', busy: 'ТБ уже приймає інший файл', interrupted: 'передачу перервано',
-              cant_create: 'ТБ не зміг створити файл', unknown_size: 'невідомий розмір', not_a_link: 'це не посилання' },
+              cant_create: 'ТБ не зміг створити файл', unknown_size: 'невідомий розмір', canceled: 'скасовано на ТБ',
+              too_long: 'задовго для екрана', empty: 'нічого надсилати' },
   },
 };
 const t = T[(navigator.language || 'en').slice(0, 2)] || T.en;
 document.documentElement.lang = t === T.uk ? 'uk' : 'en';
 document.querySelectorAll('[data-t]').forEach((el) => { el.textContent = t[el.dataset.t]; });
+document.querySelectorAll('[data-t-placeholder]').forEach((el) => { el.placeholder = t[el.dataset.tPlaceholder]; });
 
 const $ = (id) => document.getElementById(id);
 const size = (b) => b > 1e9 ? (b / 1e9).toFixed(1) + t.gb : (b / 1e6).toFixed(b > 1e8 ? 0 : 1) + t.mb;
@@ -169,10 +180,13 @@ async function refreshFree() {
   } catch (_) { $('free').textContent = ''; }
 }
 
+let current = null;
+/** Sends one file; resolves with the error key, '' when it arrived. */
 function send(file, li) {
   return new Promise((done) => {
     const pct = li.querySelector('.pct'), bar = li.querySelector('i');
     const xhr = new XMLHttpRequest();
+    current = xhr;
     xhr.open('POST', 'upload?to=' + to + '&name=' + encodeURIComponent(file.name));
     xhr.upload.onprogress = (e) => {
       if (!e.lengthComputable) return;
@@ -184,40 +198,69 @@ function send(file, li) {
         li.className = 'ok'; bar.style.width = '100%';
         let folder = ''; try { folder = JSON.parse(xhr.responseText).folder || ''; } catch (_) {}
         pct.textContent = folder ? t.onTv + ' · ' + folder : t.onTv;
+        return done('');
       }
-      else { li.className = 'bad'; try { pct.textContent = t.errors[JSON.parse(xhr.responseText).error] || t.failed; } catch (_) { pct.textContent = t.failed; } }
-      done();
+      let key = 'failed'; try { key = JSON.parse(xhr.responseText).error || key; } catch (_) {}
+      li.className = 'bad'; pct.textContent = t.errors[key] || t.failed;
+      done(key);
     };
-    xhr.onerror = () => { li.className = 'bad'; pct.textContent = t.lost; done(); };
+    xhr.onerror = () => { li.className = 'bad'; pct.textContent = t.lost; done('lost'); };
+    xhr.onabort = () => { li.className = 'bad'; pct.textContent = t.canceled; done('aborted'); };
     xhr.send(file);
   });
 }
 
-$('files').addEventListener('change', async (e) => {
-  const files = [...e.target.files];
-  e.target.value = '';
-  const items = files.map((f) => {
+// One queue for every pick and drop: the TV takes one file at a time, and it has one disk anyway.
+const queue = [];
+let working = false;
+function enqueue(files) {
+  for (const f of files) {
     const li = document.createElement('li');
     li.innerHTML = '<div class="row"><span class="name"></span><span class="pct"></span></div><div class="bar"><i></i></div>';
     li.querySelector('.name').textContent = f.name + ' · ' + size(f.size);
     li.querySelector('.pct').textContent = t.waiting;
     $('list').prepend(li);
-    return [f, li];
-  });
-  // One by one: the TV takes one file at a time, and it has one disk anyway.
-  for (const [f, li] of items) {
+    queue.push([f, li]);
+  }
+  work();
+}
+function dropQueue(text) {
+  queue.splice(0).forEach(([, li]) => { li.className = 'bad'; li.querySelector('.pct').textContent = text; });
+}
+async function work() {
+  if (working) return;
+  working = true; $('stop').hidden = false;
+  while (queue.length) {
+    const [f, li] = queue.shift();
     if (free !== null && f.size > free) { li.className = 'bad'; li.querySelector('.pct').textContent = t.noSpace; continue; }
-    await send(f, li);
+    // Canceled on the TV: the person wants the rest stopped too.
+    if (await send(f, li) === 'canceled') dropQueue(t.errors.canceled);
     await refreshFree();
   }
+  current = null; working = false; $('stop').hidden = true;
+}
+$('stop').addEventListener('click', () => { dropQueue(t.canceled); if (current) current.abort(); });
+
+$('files').addEventListener('change', (e) => { enqueue([...e.target.files]); e.target.value = ''; });
+// From a computer: drop files anywhere on the page.
+let depth = 0;
+const dragging = (on) => document.body.classList.toggle('dragging', on);
+document.addEventListener('dragenter', (e) => { if (e.dataTransfer.types.includes('Files')) { depth++; dragging(true); } });
+document.addEventListener('dragleave', () => { if (--depth <= 0) { depth = 0; dragging(false); } });
+document.addEventListener('dragover', (e) => e.preventDefault());
+document.addEventListener('drop', (e) => {
+  e.preventDefault(); depth = 0; dragging(false);
+  const files = [...e.dataTransfer.files];
+  if (files.length) enqueue(files);
 });
 
 $('linkForm').addEventListener('submit', async (e) => {
   e.preventDefault();
-  const url = $('url').value.trim();
-  if (!/^https?:\/\//.test(url)) { $('note').textContent = t.needLink; return; }
-  const r = await fetch('link', { method: 'POST', body: url }).catch(() => null);
-  $('note').textContent = r && r.ok ? t.linkOk : t.linkFail;
+  const text = $('url').value.trim();
+  if (!text) { $('note').textContent = t.needLink; return; }
+  const r = await fetch('text', { method: 'POST', body: text }).catch(() => null);
+  let key = ''; if (r && !r.ok) { try { key = (await r.json()).error; } catch (_) {} }
+  $('note').textContent = r && r.ok ? t.linkOk : (t.errors[key] || t.linkFail);
   if (r && r.ok) $('url').value = '';
 });
 

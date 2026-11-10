@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name" translatable="false">Dropyk</string>
-    <string name="tagline">Files and links from your phone to the TV — no app on the phone</string>
+    <string name="tagline">Files, links and text from your phone to the TV — no app on the phone</string>
     <string name="step1">1. Scan the code with your phone camera</string>
     <string name="step2">2. Choose files on the page that opens</string>
     <string name="no_network">The TV isn\'t connected to a local network. Connect it to Wi‑Fi or Ethernet and open Dropyk again.</string>
@@ -30,6 +30,9 @@
     <string name="send_title">Send to TV</string>
     <string name="url_hint">Or open this address on the phone:</string>
     <string name="link_title">Link from the phone</string>
+    <string name="text_title">Text from the phone</string>
+    <string name="cancel">Cancel</string>
+    <string name="new_code">New address</string>
     <string name="check_updates">Updates</string>
     <string name="checking">Checking…</string>
     <string name="up_to_date">Up to date</string>

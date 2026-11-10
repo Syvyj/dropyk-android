@@ -1,5 +1,5 @@
 <resources>
-    <string name="tagline">Файли й посилання з телефона на телевізор — без застосунку на телефоні</string>
+    <string name="tagline">Файли, посилання й текст з телефона на телевізор — без застосунку на телефоні</string>
     <string name="step1">1. Наведіть камеру телефона на код</string>
     <string name="step2">2. На сторінці, що відкриється, виберіть файли</string>
     <string name="no_network">Телевізор не в локальній мережі. Підключіть Wi‑Fi чи кабель і відкрийте Dropyk знову.</string>
@@ -27,6 +27,9 @@
     <string name="send_title">Надішліть на телевізор</string>
     <string name="url_hint">Або відкрийте цю адресу на телефоні:</string>
     <string name="link_title">Посилання з телефона</string>
+    <string name="text_title">Текст із телефона</string>
+    <string name="cancel">Скасувати</string>
+    <string name="new_code">Нова адреса</string>
     <string name="check_updates">Оновлення</string>
     <string name="checking">Перевіряю…</string>
     <string name="up_to_date">Остання версія</string>

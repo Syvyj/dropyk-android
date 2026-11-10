@@ -171,7 +171,10 @@ object QuickShare {
         private var total = 0L
         private var received = 0L
         private var shownAt = 0L
-        private var closed = false
+        @Volatile private var closed = false
+        /** Cancel pressed on the TV: back to the QR afterwards, not "didn't arrive in full". */
+        @Volatile private var canceledHere = false
+        private val cancel: () -> Unit = { thread(isDaemon = true) { cancelHere() } }
 
         fun run() {
             try {
@@ -194,7 +197,8 @@ object QuickShare {
                 partial.forEach { f -> runCatching { f.sink?.close() }; f.target?.let(Drop::discard) }
                 if (claimed) {
                     if (state == State.WAITING_CONSENT) Drop.dismiss()
-                    if (partial.isNotEmpty()) Drop.show(DropState.Failed(partial.first().name))
+                    if (canceledHere) Drop.show(DropState.Waiting)
+                    else if (partial.isNotEmpty()) Drop.show(DropState.Failed(partial.first().name))
                     Drop.release()
                 }
             }
@@ -404,7 +408,7 @@ object QuickShare {
         @Synchronized private fun accept() {
             if (state != State.WAITING_CONSENT || closed) return
             state = State.RECEIVING
-            Drop.show(DropState.Receiving(files.values.firstOrNull()?.name ?: device, 0, total.coerceAtLeast(1)))
+            Drop.show(DropState.Receiving(files.values.firstOrNull()?.name ?: device, 0, total.coerceAtLeast(1), cancel))
             runCatching {
                 sendSharing(
                     Protocol.V1Frame.newBuilder().setType(Protocol.V1Frame.FrameType.RESPONSE).setConnectionResponse(
@@ -440,7 +444,7 @@ object QuickShare {
                 val now = System.currentTimeMillis()
                 if (now - shownAt >= Drop.PROGRESS_EVERY_MS) {
                     shownAt = now
-                    Drop.show(DropState.Receiving(f.name, received, total.coerceAtLeast(1)))
+                    Drop.show(DropState.Receiving(f.name, received, total.coerceAtLeast(1), cancel))
                 }
             }
             if (chunk.flags and 1 == 1) {
@@ -456,11 +460,13 @@ object QuickShare {
             }
         }
 
-        /** A link opens like one from the phone page; plain text is saved as a .txt file. */
+        /** Like text from the phone page: a link to open, short text on screen; long text is saved as a .txt file. */
         private fun text(bytes: ByteArray) {
-            val text = String(bytes, Charsets.UTF_8)
-            if (textIsUrl && (text.startsWith("http://") || text.startsWith("https://"))) {
-                Drop.show(DropState.Link(text.trim()))
+            val text = String(bytes, Charsets.UTF_8).trim()
+            if (text.isEmpty()) return disconnect()
+            if (bytes.size <= Drop.MAX_TEXT) {
+                // A link marked as plain text still opens; text marked as a link but not one is shown.
+                Drop.show(if (textIsUrl) Drop.textState(text) else DropState.Text(text))
             } else {
                 val name = java.text.SimpleDateFormat("yyyy-MM-dd HH.mm.ss", java.util.Locale.ROOT).format(java.util.Date()) + ".txt"
                 val target = Drop.create(name, "text/plain", Drop.sorted)
@@ -468,6 +474,14 @@ object QuickShare {
                 Drop.publish(target)
                 Drop.received(target, "text/plain")
             }
+            disconnect()
+        }
+
+        /** Tells the phone the TV canceled, then hangs up; run() removes the partial files. */
+        private fun cancelHere() {
+            if (closed) return
+            canceledHere = true
+            runCatching { sendSharing(Protocol.V1Frame.newBuilder().setType(Protocol.V1Frame.FrameType.CANCEL)) }
             disconnect()
         }
 

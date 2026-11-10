@@ -14,7 +14,7 @@ For receiving on a Mac from an Android phone, see [Dropyk for Mac](https://githu
 
 1. **Open** Dropyk on the TV. It shows a QR code.
 2. **Scan** the code with the phone's camera. A page served by the TV itself opens; you can bookmark it.
-3. **Send** — choose files or paste a link, and they appear on the TV.
+3. **Send** — choose files or paste a link or text, and they appear on the TV.
 
 From an Android phone it's shorter: with Dropyk open on the TV, **Share → Quick Share** and pick the TV. The TV asks to accept and shows the PIN the phone shows.
 
@@ -23,7 +23,9 @@ From an Android phone it's shorter: with Dropyk open on the TV, **Share → Quic
 - **Photos, videos, APKs, any file** — one or a hundred at a time, sent one by one. Bytes go straight to the TV's storage, so a 4 GB film never passes through its memory; the page checks free space first. On a budget Google TV box over Wi‑Fi, files arrive at about 12–20 MB/s.
 - **Quick Share** — the TV shows up in the Share sheet of Android phones on the same Wi‑Fi, under its own name. Files, links and text; the TV asks before accepting.
 - **iPhone, iPad and Mac** — add the [Send to Dropyk](https://dropyk.syvyj.dev/shortcut/Send%20to%20Dropyk.shortcut) shortcut, type the TV's address once (it's under the QR code), and Dropyk shows up in the Share sheet for photos, videos and files.
-- **Links** — paste one on the phone and open it on the TV.
+- **Links and text** — paste a link to open it on the TV, or any text (a Wi‑Fi password, a code) to show it big on the screen.
+- **Cancel any time** — *Stop sending* on the phone or *Cancel* on the TV; the half-received file is removed.
+- **From a computer too** — open the address under the QR code in any browser and drop files onto the page.
 - **One press with the remote** — a video plays, an APK installs, a photo shows on screen, a link opens.
 - **You choose where files go** — *Downloads* puts everything in `Download/Dropyk`; *By type* puts videos in `Movies/Dropyk`, photos in `Pictures/Dropyk`, music in `Music/Dropyk` and the rest in `Download/Dropyk`. The phone remembers the choice.
 - **Receive in background** — a switch on the main screen keeps Dropyk receiving while it's closed, starts it after a reboot, and brings it to the screen when something arrives (it asks for *Display over other apps* for that).
@@ -57,7 +59,7 @@ Dropyk is free and will stay free. If it saves you time, you can buy me a coffee
 ## Privacy
 
 - Files go from the phone to the TV over your own network. There is no server in between and nothing is uploaded anywhere.
-- The page address carries a secret key, so only someone who saw the code can send.
+- The page address carries a secret key, so only someone who saw the code can send. *New address* on the TV changes it (bookmarks and the iPhone shortcut then need the new one).
 - Quick Share is encrypted end to end (the same UKEY2 key exchange phones use), and the TV asks before every transfer.
 - The TV listens only while Dropyk is open or *Receive in background* is on. No account, no ads, no tracking.
 

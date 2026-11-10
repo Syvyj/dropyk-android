@@ -42,8 +42,8 @@ class Background : Service() {
                 // second, and the next file of a batch follows the last one: popping up on those trapped
                 // the person in Dropyk after Home. A result left on screen for a while counts as idle.
                 val idle = before is DropState.Waiting || before is DropState.Connected || before is DropState.Failed ||
-                    ((before is DropState.Received || before is DropState.Link) && now - changedAt > BATCH_GAP_MS)
-                val arriving = state is DropState.Receiving || state is DropState.Incoming || state is DropState.Link
+                    ((before is DropState.Received || before is DropState.Link || before is DropState.Text) && now - changedAt > BATCH_GAP_MS)
+                val arriving = state is DropState.Receiving || state is DropState.Incoming || state is DropState.Link || state is DropState.Text
                 if (idle && arriving && !MainActivity.visible && canPopUp(this@Background)) {
                     startActivity(Intent(this@Background, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_REORDER_TO_FRONT))
                 }

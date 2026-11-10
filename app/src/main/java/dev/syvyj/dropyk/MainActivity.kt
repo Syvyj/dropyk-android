@@ -45,6 +45,7 @@ import androidx.core.content.edit
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.withFrameNanos
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.activity.compose.BackHandler
@@ -167,8 +168,10 @@ class MainActivity : ComponentActivity() {
 @Composable
 private fun DropScreen() {
     val first = remember { Drop.clearFailure(); Drop.start() }
+    // "New address" bumps this, so the QR changes at once, not at the next poll.
+    var renewed by remember { mutableIntStateOf(0) }
     // Asked again every few seconds: a network that comes up late or a new IP reaches the QR.
-    val address by produceState(first) { while (true) { delay(5_000); value = withContext(Dispatchers.IO) { Drop.start() } } }
+    val address by produceState(first, renewed) { while (true) { value = withContext(Dispatchers.IO) { Drop.start() }; delay(5_000) } }
     val url = address
     val state by Drop.state.collectAsStateWithLifecycle()
     // The screen stays on while something comes in, not all the time: a still QR burns into OLED screens.
@@ -207,6 +210,9 @@ private fun DropScreen() {
                             Text(stringResource(R.string.step2), color = Ink, fontSize = 24.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(top = 14.dp))
                             Text(stringResource(R.string.url_hint), color = Muted, fontSize = 15.sp, modifier = Modifier.padding(top = 26.dp))
                             Text(url, color = Accent, fontSize = 16.sp, modifier = Modifier.padding(top = 2.dp))
+                            Box(Modifier.padding(top = 14.dp)) {
+                                Action(stringResource(R.string.new_code), null) { Drop.newToken(); renewed++ }
+                            }
                         }
                     }
                     else -> Transfer(state, actionFocus)
@@ -262,7 +268,9 @@ private fun DropScreen() {
     if (idle) FocusOnShow(supportFocus, support)
 
     // Something arrived: focus jumps to the action — the person is holding a remote now.
-    if (state is DropState.Received || state is DropState.Link || state is DropState.Incoming) FocusOnShow(actionFocus, state)
+    if (state is DropState.Received || state is DropState.Link || state is DropState.Text || state is DropState.Incoming) FocusOnShow(actionFocus, state)
+    // Cancel is focused once per file, not on every progress update.
+    (state as? DropState.Receiving)?.let { if (it.cancel != null) FocusOnShow(actionFocus, "receiving " + it.name) }
 }
 
 /** Everything that isn't the QR: progress, the received file with its actions, a link. */
@@ -275,6 +283,13 @@ private fun Transfer(state: DropState, actionFocus: FocusRequester) {
             Box(Modifier.padding(top = 22.dp).fillMaxWidth().height(10.dp).clip(RoundedCornerShape(5.dp)).background(Line)) {
                 Box(Modifier.fillMaxWidth(s.done.toFloat() / s.total.coerceAtLeast(1)).height(10.dp).clip(RoundedCornerShape(5.dp)).background(Brush.horizontalGradient(listOf(Blue, Violet))))
             }
+            s.cancel?.let { cancel -> Box(Modifier.padding(top = 20.dp)) { Action(stringResource(R.string.cancel), actionFocus) { cancel() } } }
+        }
+        is DropState.Text -> Panel(Modifier.fillMaxWidth()) {
+            Text(stringResource(R.string.text_title), color = Muted, fontSize = 16.sp)
+            // Big, so a password or a code reads from the sofa.
+            Text(s.text, color = Ink, fontSize = 30.sp, fontWeight = FontWeight.SemiBold, maxLines = 6, modifier = Modifier.padding(top = 6.dp))
+            Box(Modifier.padding(top = 20.dp)) { Action(stringResource(R.string.done), actionFocus) { Drop.dismiss() } }
         }
         is DropState.Received -> Panel(Modifier.fillMaxWidth()) { Row(horizontalArrangement = Arrangement.spacedBy(28.dp), verticalAlignment = Alignment.CenterVertically) {
             if (s.mime.startsWith("image/")) Preview(s.uri)
