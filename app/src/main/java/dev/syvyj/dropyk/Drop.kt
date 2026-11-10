@@ -1,10 +1,13 @@
 package dev.syvyj.dropyk
 
 import android.annotation.SuppressLint
+import android.content.ContentResolver
+import android.content.ContentUris
 import android.content.ContentValues
 import android.content.Context
 import android.net.Uri
 import android.os.Build
+import android.os.Bundle
 import android.os.Environment
 import android.os.StatFs
 import android.provider.MediaStore
@@ -20,7 +23,9 @@ import java.net.ServerSocket
 import java.net.Socket
 import java.net.URLDecoder
 import java.security.SecureRandom
+import java.util.concurrent.Semaphore
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.concurrent.thread
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -64,13 +69,16 @@ object Drop {
         prefs.getString("token", null) ?: ByteArray(8).also { SecureRandom().nextBytes(it) }
             .joinToString("") { "%02x".format(it) }.also { prefs.edit { putString("token", it) } }
     }
+    /** One transfer at a time for the whole TV: the page and Quick Share share one screen and one disk. */
     private val busy = AtomicBoolean(false)
-    private var received = 0
+    private val received = AtomicInteger()
+    /** Requests at once; more are turned away, so a flood of connections can't eat the box's memory. */
+    private val connections = Semaphore(16)
 
     private val _state = MutableStateFlow<DropState>(DropState.Waiting)
     val state: StateFlow<DropState> = _state.asStateFlow()
 
-    @Volatile private var address: String? = null
+    private var server: ServerSocket? = null
 
     private val legacyDir: File by lazy {
         val base = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS) ?: File(context.filesDir, "downloads")
@@ -79,22 +87,70 @@ object Drop {
 
     fun init(context: Context) {
         this.context = context.applicationContext
+        thread(name = "drop-cleanup", isDaemon = true) { cleanUpPending(System.currentTimeMillis() / 1000) }
     }
 
-    /** Address for the QR; `null` when the TV isn't on a local network or no port is free. */
+    /**
+     * Address for the QR; `null` when the TV isn't on a local network or no port is free. The
+     * screen asks again every few seconds, so a new IP (or a network that came up late) shows up.
+     */
     @Synchronized
     fun start(): String? {
-        if (_state.value is DropState.Failed) _state.value = DropState.Waiting
-        address?.let { return it }
         val ip = lanAddress() ?: return null
-        val server = PORTS.firstNotNullOfOrNull { runCatching { ServerSocket(it) }.getOrNull() } ?: return null
-        thread(name = "drop", isDaemon = true) {
-            while (true) {
-                val socket = runCatching { server.accept() }.getOrNull() ?: break
-                thread(isDaemon = true) { runCatching { socket.use(::serve) }.onFailure { Log.w(TAG, "request", it) } }
+        val listening = server ?: (PORTS.firstNotNullOfOrNull { runCatching { ServerSocket(it) }.getOrNull() } ?: return null).also { s ->
+            server = s
+            thread(name = "drop", isDaemon = true) {
+                while (true) {
+                    val socket = runCatching { s.accept() }.getOrNull() ?: break
+                    if (!connections.tryAcquire()) { runCatching { socket.close() }; continue }
+                    thread(isDaemon = true) {
+                        try { runCatching { socket.use(::serve) }.onFailure { Log.w(TAG, "request", it) } } finally { connections.release() }
+                    }
+                }
             }
         }
-        return "http://$ip:${server.localPort}/$token/".also { address = it }
+        return "http://$ip:${listening.localPort}/$token/"
+    }
+
+    /** Stops listening: Dropyk closed with Receive in background off. A transfer under way finishes. */
+    @Synchronized
+    fun stop() {
+        server?.let { runCatching { it.close() } }
+        server = null
+    }
+
+    /** Back to the QR from an old error, when Dropyk is opened again. */
+    fun clearFailure() {
+        if (_state.value is DropState.Failed) _state.value = DropState.Waiting
+    }
+
+    /** Takes the TV's one transfer slot; false while another transfer holds it. */
+    internal fun claim() = busy.compareAndSet(false, true)
+    internal fun release() = busy.set(false)
+
+    /**
+     * Half-written files left by a transfer the process didn't live through (killed, power cut):
+     * hidden from everyone, so nothing else would ever clean them. Only rows older than [before]
+     * (seconds), so a transfer that starts meanwhile is safe. ponytail: Android 11+ only, where
+     * pending rows can be listed; on 7–9 a partial file looks whole and stays.
+     */
+    private fun cleanUpPending(before: Long) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return
+        val args = Bundle().apply {
+            putInt(MediaStore.QUERY_ARG_MATCH_PENDING, MediaStore.MATCH_ONLY)
+            putString(ContentResolver.QUERY_ARG_SQL_SELECTION, "${MediaStore.MediaColumns.DATE_ADDED} < ?")
+            putStringArray(ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS, arrayOf(before.toString()))
+        }
+        val collections = listOf(
+            MediaStore.Downloads.EXTERNAL_CONTENT_URI, MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
+            MediaStore.Images.Media.EXTERNAL_CONTENT_URI, MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+        )
+        for (collection in collections) runCatching {
+            // Without storage permission an app sees only its own rows: nothing of anyone else's is touched.
+            val ids = context.contentResolver.query(collection, arrayOf(MediaStore.MediaColumns._ID), args, null)
+                ?.use { c -> buildList { while (c.moveToNext()) add(c.getLong(0)) } }.orEmpty()
+            ids.forEach { context.contentResolver.delete(ContentUris.withAppendedId(collection, it), null, null) }
+        }.onFailure { Log.w(TAG, "clean up $collection", it) }
     }
 
     /** Where Quick Share saves: the phone page's last choice, Downloads until there is one. */
@@ -105,8 +161,7 @@ object Drop {
 
     /** A finished file from Quick Share, shown like one from the page. */
     internal fun received(target: Target, mime: String) {
-        received++
-        _state.value = DropState.Received(target.uri, target.path, target.name, mime, target.folder, received)
+        _state.value = DropState.Received(target.uri, target.path, target.name, mime, target.folder, received.incrementAndGet())
     }
 
     /** Back to the QR once the received file was dealt with. */
@@ -118,10 +173,12 @@ object Drop {
         socket.soTimeout = 60_000
         val input = socket.getInputStream().buffered(256 * 1024)
         val out = socket.getOutputStream()
-        val request = input.line() ?: return
+        // Bounded before the key is even checked: an endless line or endless headers can't fill memory.
+        val request = input.line(MAX_LINE) ?: return
         var length = -1L
-        while (true) {
-            val h = input.line() ?: break
+        for (i in 0..MAX_HEADERS) {
+            if (i == MAX_HEADERS) return
+            val h = input.line(MAX_LINE) ?: break
             if (h.isEmpty()) break
             if (h.startsWith("content-length:", ignoreCase = true)) length = h.substringAfter(':').trim().toLongOrNull() ?: -1
         }
@@ -140,7 +197,10 @@ object Drop {
             method == "GET" && route == "space" -> out.reply(200, "application/json", """{"free":${free()}}""")
             method == "POST" && route == "link" && length in 1..4096 -> {
                 val url = String(input.readExactly(length.toInt()), Charsets.UTF_8).trim()
-                if (url.startsWith("http://") || url.startsWith("https://")) {
+                if (busy.get()) {
+                    // A file or a Quick Share request is on the screen: a link would hide it.
+                    out.error(409, "busy")
+                } else if (url.startsWith("http://") || url.startsWith("https://")) {
                     _state.value = DropState.Link(url)
                     out.reply(200, "application/json", "{}")
                 } else {
@@ -161,7 +221,7 @@ object Drop {
     private fun upload(input: InputStream, out: OutputStream, rawName: String, length: Long, sorted: Boolean) {
         if (length <= 0) return out.error(411, "unknown_size")
         if (length + MARGIN > free()) return out.error(507, "no_space")
-        if (!busy.compareAndSet(false, true)) return out.error(409, "busy")
+        if (!claim()) return out.error(409, "busy")
         val name = safeName(rawName)
         val mime = mimeOf(name)
         val target = runCatching { create(name, mime, sorted) }.getOrElse {
@@ -194,8 +254,7 @@ object Drop {
                 return out.error(400, "interrupted")
             }
             publish(target)
-            received++
-            _state.value = DropState.Received(target.uri, target.path, target.name, mime, target.folder, received)
+            received(target, mime)
             out.reply(200, "application/json", """{"folder":"${target.folder}"}""")
         } catch (e: Exception) {
             discard(target)
@@ -271,12 +330,14 @@ object Drop {
         flush()
     }
 
-    private fun InputStream.line(): String? {
+    /** One header line; longer than [max] is an error, not a bigger buffer. */
+    internal fun InputStream.line(max: Int): String? {
         val sb = StringBuilder()
         while (true) {
             val c = read()
             if (c < 0) return if (sb.isEmpty()) null else sb.toString()
             if (c == '\n'.code) return sb.toString().trimEnd('\r')
+            if (sb.length >= max) error("header line longer than $max")
             sb.append(c.toChar())
         }
     }
@@ -295,6 +356,9 @@ object Drop {
     private const val TAG = "Drop"
     internal const val PROGRESS_EVERY_MS = 500L
     private val PORTS = 8776..8780
+    /** Enough for a file name of 120 characters, percent-encoded twice over. */
+    internal const val MAX_LINE = 8 * 1024
+    private const val MAX_HEADERS = 64
     /** Leave the system 200 MB: a box filled to the brim slows down and can't update. */
     internal const val MARGIN = 200L * 1024 * 1024
     const val FOLDER = "Dropyk"
@@ -310,9 +374,16 @@ object Drop {
 
     private val VPN = listOf("tun", "ppp", "wg", "tap", "ipsec")
 
+    /**
+     * The name's last path part, without characters file systems refuse; "." and ".." become
+     * "file". A long name is cut before its extension, which picks the folder and the button.
+     */
     fun safeName(raw: String): String {
-        val base = raw.substringAfterLast('/').substringAfterLast('\\').replace(Regex("""[\u0000-\u001f:*?"<>|]"""), "_").trim().take(120)
-        return base.ifBlank { "file" }
+        val base = raw.substringAfterLast('/').substringAfterLast('\\').replace(Regex("""[\u0000-\u001f:*?"<>|]"""), "_").trim()
+        if (base.all { it == '.' }) return "file"
+        if (base.length <= 120) return base
+        val ext = base.substringAfterLast('.', "")
+        return if (ext.length in 1..16) base.take(119 - ext.length) + "." + ext else base.take(120)
     }
 
     fun mimeOf(name: String): String = when (name.substringAfterLast('.', "").lowercase()) {

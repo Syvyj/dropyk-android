@@ -28,7 +28,7 @@ From an Android phone it's shorter: with Dropyk open on the TV, **Share → Quic
 - **You choose where files go** — *Downloads* puts everything in `Download/Dropyk`; *By type* puts videos in `Movies/Dropyk`, photos in `Pictures/Dropyk`, music in `Music/Dropyk` and the rest in `Download/Dropyk`. The phone remembers the choice.
 - **Receive in background** — a switch on the main screen keeps Dropyk receiving while it's closed, starts it after a reboot, and brings it to the screen when something arrives (it asks for *Display over other apps* for that).
 - **Dark or light** — dark by default, like the TV around it; one button switches. The phone page and the site follow the phone's theme.
-- **Updates itself** — once a day it checks GitHub and offers *Update to …* on the TV.
+- **Updates itself** — every 6 hours it checks GitHub and offers *Update to …* on the TV.
 - **English and Ukrainian** on the TV and on the phone page.
 
 | TV | Phone |
@@ -59,7 +59,7 @@ Dropyk is free and will stay free. If it saves you time, you can buy me a coffee
 - Files go from the phone to the TV over your own network. There is no server in between and nothing is uploaded anywhere.
 - The page address carries a secret key, so only someone who saw the code can send.
 - Quick Share is encrypted end to end (the same UKEY2 key exchange phones use), and the TV asks before every transfer.
-- The TV listens only while Dropyk is open. No account, no ads, no tracking.
+- The TV listens only while Dropyk is open or *Receive in background* is on. No account, no ads, no tracking.
 
 
 ## Building
@@ -68,7 +68,7 @@ Dropyk is free and will stay free. If it saves you time, you can buy me a coffee
 ./gradlew :app:assembleRelease
 ```
 
-Release signing reads `DROPYK_KEYSTORE`, `DROPYK_KEYSTORE_PASSWORD`, `DROPYK_KEY_ALIAS` and `DROPYK_KEY_PASSWORD` from `.env` or `-P`; without them the release build is debug-signed.
+Release signing reads `DROPYK_KEYSTORE`, `DROPYK_KEYSTORE_PASSWORD`, `DROPYK_KEY_ALIAS` and `DROPYK_KEY_PASSWORD` from `.env` or `-P`; without them the release build stays unsigned (`app-release-unsigned.apk`), so an APK that wouldn't install over the real one can't be published by mistake.
 
 The iPhone shortcut comes from [`shortcut/make.py`](shortcut/make.py) (macOS: it signs with `shortcuts sign`).
 

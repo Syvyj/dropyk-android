@@ -30,6 +30,29 @@ import kotlinx.coroutines.launch
 class Background : Service() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
+    /** Once per service, not per start: every start used to add another watcher. */
+    override fun onCreate() {
+        super.onCreate()
+        scope.launch {
+            var before: DropState = Drop.state.value
+            var changedAt = 0L
+            Drop.state.collect { state ->
+                val now = System.currentTimeMillis()
+                // Only the start of something new pops Dropyk up. A transfer updates its state twice a
+                // second, and the next file of a batch follows the last one: popping up on those trapped
+                // the person in Dropyk after Home. A result left on screen for a while counts as idle.
+                val idle = before is DropState.Waiting || before is DropState.Connected || before is DropState.Failed ||
+                    ((before is DropState.Received || before is DropState.Link) && now - changedAt > BATCH_GAP_MS)
+                val arriving = state is DropState.Receiving || state is DropState.Incoming || state is DropState.Link
+                if (idle && arriving && !MainActivity.visible && canPopUp(this@Background)) {
+                    startActivity(Intent(this@Background, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_REORDER_TO_FRONT))
+                }
+                if (state::class != before::class) changedAt = now
+                before = state
+            }
+        }
+    }
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val notification = notification()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -39,14 +62,6 @@ class Background : Service() {
         }
         Drop.start()
         QuickShare.start(this)
-        scope.launch {
-            Drop.state.collect { state ->
-                val arriving = state is DropState.Receiving || state is DropState.Incoming || state is DropState.Link
-                if (arriving && !MainActivity.visible && canPopUp(this@Background)) {
-                    startActivity(Intent(this@Background, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_REORDER_TO_FRONT))
-                }
-            }
-        }
         return START_STICKY
     }
 
@@ -83,6 +98,8 @@ class Background : Service() {
     companion object {
         private const val ID = 1
         private const val CHANNEL = "background"
+        /** Files of one batch from the page follow each other within this; a later one is something new. */
+        private const val BATCH_GAP_MS = 15_000L
 
         fun isOn(context: Context) = context.getSharedPreferences("drop", Context.MODE_PRIVATE).getBoolean("background", false)
 

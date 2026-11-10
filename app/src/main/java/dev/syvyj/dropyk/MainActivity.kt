@@ -11,7 +11,6 @@ import android.os.Bundle
 import android.os.StrictMode
 import android.provider.Settings
 import android.util.Log
-import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -66,6 +65,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.pluralStringResource
 import androidx.core.net.toUri
 import androidx.compose.ui.res.stringResource
@@ -99,7 +99,8 @@ class DropykApp : Application() {
         super.onCreate()
         Drop.init(this)
         Update.init(this)
-        QuickShare.start(this)
+        // Quick Share starts with the screen or the background service, not with the process: a
+        // reboot wakes the process (the boot receiver) even with Receive in background off.
         // Lets watch() hand players a file:// path; Android 7+ kills the app for that by default.
         StrictMode.setVmPolicy(StrictMode.VmPolicy.Builder().build())
     }
@@ -138,9 +139,8 @@ private val QrInk = Color(0xFF161B3D)
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // A big upload takes minutes; the screensaver shouldn't hide the progress.
-        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         Theme.load(this)
+        QuickShare.start(this)
         setContent { DropScreen() }
         // Turned on before and the process was gone (an update, a reboot): bring it back.
         if (Background.isOn(this)) Background.start(this)
@@ -148,6 +148,15 @@ class MainActivity : ComponentActivity() {
 
     override fun onStart() { super.onStart(); visible = true }
     override fun onStop() { super.onStop(); visible = false }
+
+    /** Closed with Back and not receiving in background: stop listening, as the README promises. */
+    override fun onDestroy() {
+        if (isFinishing && !Background.isOn(this)) {
+            Drop.stop()
+            QuickShare.stop()
+        }
+        super.onDestroy()
+    }
 
     companion object {
         /** On screen now: the background service doesn't bring it up again. */
@@ -157,8 +166,15 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 private fun DropScreen() {
-    val url = remember { Drop.start() }
+    val first = remember { Drop.clearFailure(); Drop.start() }
+    // Asked again every few seconds: a network that comes up late or a new IP reaches the QR.
+    val address by produceState(first) { while (true) { delay(5_000); value = withContext(Dispatchers.IO) { Drop.start() } } }
+    val url = address
     val state by Drop.state.collectAsStateWithLifecycle()
+    // The screen stays on while something comes in, not all the time: a still QR burns into OLED screens.
+    val view = LocalView.current
+    val busy = state is DropState.Receiving || state is DropState.Incoming
+    LaunchedEffect(busy) { view.keepScreenOn = busy }
     val actionFocus = remember { FocusRequester() }
     var support by remember { mutableStateOf(false) }
     val supportFocus = remember { FocusRequester() }

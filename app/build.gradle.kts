@@ -18,7 +18,8 @@ android {
         versionName = "0.4.2"
     }
 
-    // Release key from `.env` or `-P`; without it the release build is debug-signed.
+    // Release key from `.env` or `-P`; without it the release build is unsigned (app-release-unsigned.apk):
+    // a debug-signed APK on GitHub would look fine and never install over the real one.
     val localEnv = Properties().apply { rootProject.file(".env").takeIf { it.isFile }?.inputStream()?.use(::load) }
     val env = { key: String -> (findProperty(key) as String?) ?: localEnv.getProperty(key).orEmpty() }
     val releaseKeystore = env("DROPYK_KEYSTORE").takeIf { it.isNotBlank() }?.let(::file)?.takeIf { it.isFile }
@@ -38,7 +39,7 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            signingConfig = signingConfigs.getByName(if (releaseKeystore != null) "release" else "debug")
+            signingConfig = if (releaseKeystore != null) signingConfigs.getByName("release") else null
         }
     }
 

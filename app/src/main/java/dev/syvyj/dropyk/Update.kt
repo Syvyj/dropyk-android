@@ -15,6 +15,7 @@ import androidx.core.net.toUri
 import java.io.File
 import java.net.HttpURLConnection
 import java.net.URL
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -56,6 +57,7 @@ object Update {
     /** The "install unknown apps" screen is open; the update goes on by itself once it's allowed. */
     val awaitingPermission: StateFlow<Boolean> = _awaitingPermission.asStateFlow()
     @Volatile private var waiting: AppRelease? = null
+    private val installing = AtomicBoolean(false)
 
     private val installed: String by lazy {
         runCatching { context.packageManager.getPackageInfo(context.packageName, 0).versionName }.getOrNull().orEmpty()
@@ -69,10 +71,10 @@ object Update {
         app.registerActivityLifecycleCallbacks(object : Application.ActivityLifecycleCallbacks {
             override fun onActivityResumed(activity: Activity) {
                 val release = waiting ?: return
-                if (!canInstall()) return
                 waiting = null
                 _awaitingPermission.value = false
-                scope.launch { install(release) }
+                // Back without allowing it: drop the "waiting for permission" line; "Update" asks again.
+                if (canInstall()) scope.launch { install(release) }
             }
             override fun onActivityCreated(activity: Activity, state: Bundle?) = Unit
             override fun onActivityStarted(activity: Activity) = Unit
@@ -108,13 +110,25 @@ object Update {
     }
 
     private fun install(release: AppRelease) {
+        // A second press before the progress shows would start a second download into the same file.
+        if (!installing.compareAndSet(false, true)) return
+        try {
+            download(release)
+        } finally {
+            installing.set(false)
+        }
+    }
+
+    private fun download(release: AppRelease) {
         _error.value = null
         if (!canInstall()) {
             val ask = Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, "package:${context.packageName}".toUri())
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            // Set before the screen opens: coming back from it is what reads them.
+            waiting = release
+            _awaitingPermission.value = true
             runCatching { context.startActivity(ask) }
-                .onSuccess { waiting = release; _awaitingPermission.value = true }
-                .onFailure { _error.value = it.message ?: it.javaClass.simpleName }
+                .onFailure { waiting = null; _awaitingPermission.value = false; _error.value = it.message ?: it.javaClass.simpleName }
             return
         }
         val apk = File(File(context.cacheDir, "updates").apply { mkdirs() }, APK_NAME)

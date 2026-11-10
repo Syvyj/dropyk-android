@@ -44,6 +44,7 @@ import java.security.interfaces.ECPublicKey
 import java.security.spec.ECGenParameterSpec
 import java.security.spec.ECPoint
 import java.security.spec.ECPublicKeySpec
+import java.util.concurrent.Semaphore
 import javax.crypto.Cipher
 import javax.crypto.KeyAgreement
 import javax.crypto.Mac
@@ -58,7 +59,8 @@ import kotlin.concurrent.thread
  * key exchange, AES-256-CBC + HMAC-SHA256 messages, then the transfer frames.
  *
  * Files are saved by [Drop], to the same folders as from the phone page, and the TV asks to
- * accept each transfer with the PIN the phone shows. Wi‑Fi LAN only, while Dropyk is open.
+ * accept each transfer with the PIN the phone shows. Wi‑Fi LAN only, while Dropyk is open or
+ * receiving in background.
  */
 // Holds only the application context, which lives as long as the process: no leak.
 @SuppressLint("StaticFieldLeak")
@@ -66,20 +68,35 @@ object QuickShare {
     private const val TAG = "QuickShare"
     private const val SERVICE_TYPE = "_FC9F5ED42C8A._tcp"
     private lateinit var context: Context
-    @Volatile private var started = false
+    private var server: ServerSocket? = null
+    @Volatile private var registration: NsdManager.RegistrationListener? = null
+    /** Phones at once; more are turned away, so a flood of connections can't eat the box's memory. */
+    private val connections = Semaphore(8)
 
+    /** Listen and show up in phones' Share sheets; again after [stop] or a failed registration. */
+    @Synchronized
     fun start(context: Context) {
-        if (started) return
-        started = true
+        if (server != null) return
         this.context = context.applicationContext
+        val s = runCatching { ServerSocket(0) }.getOrElse { Log.w(TAG, "listen", it); return }
+        server = s
+        advertise(s.localPort)
         thread(name = "quickshare", isDaemon = true) {
-            val server = runCatching { ServerSocket(0) }.getOrElse { Log.w(TAG, "listen", it); return@thread }
-            advertise(server.localPort)
             while (true) {
-                val socket = runCatching { server.accept() }.getOrNull() ?: break
-                thread(isDaemon = true) { Connection(socket).run() }
+                val socket = runCatching { s.accept() }.getOrNull() ?: break
+                if (!connections.tryAcquire()) { runCatching { socket.close() }; continue }
+                thread(isDaemon = true) { try { Connection(socket).run() } finally { connections.release() } }
             }
         }
+    }
+
+    /** Gone from the Share sheets: Dropyk closed with Receive in background off. A transfer under way finishes. */
+    @Synchronized
+    fun stop() {
+        registration?.let { r -> runCatching { (context.getSystemService(Context.NSD_SERVICE) as NsdManager).unregisterService(r) } }
+        registration = null
+        server?.let { runCatching { it.close() } }
+        server = null
     }
 
     /** What phones see in the sheet: the TV's name; the instance name and the "n" record are NearDrop's format. */
@@ -94,12 +111,19 @@ object QuickShare {
             setAttribute("n", b64(endpointInfo(deviceName())))
         }
         val nsd = context.getSystemService(Context.NSD_SERVICE) as NsdManager
-        nsd.registerService(info, NsdManager.PROTOCOL_DNS_SD, object : NsdManager.RegistrationListener {
+        val listener = object : NsdManager.RegistrationListener {
             override fun onServiceRegistered(info: NsdServiceInfo) = Unit
-            override fun onRegistrationFailed(info: NsdServiceInfo, code: Int) { Log.w(TAG, "mDNS registration failed: $code") }
+            override fun onRegistrationFailed(info: NsdServiceInfo, code: Int) {
+                // Not visible to phones: let the next start (opening Dropyk) try again.
+                Log.w(TAG, "mDNS registration failed: $code")
+                registration = null
+                stop()
+            }
             override fun onServiceUnregistered(info: NsdServiceInfo) = Unit
             override fun onUnregistrationFailed(info: NsdServiceInfo, code: Int) = Unit
-        })
+        }
+        registration = listener
+        nsd.registerService(info, NsdManager.PROTOCOL_DNS_SD, listener)
     }
 
     /** The name set in the TV's settings (Android 7.1+), else the model. */
@@ -123,7 +147,10 @@ object QuickShare {
     private class Connection(private val socket: Socket) {
         private val input = DataInputStream(socket.getInputStream().buffered(256 * 1024))
         private val output = socket.getOutputStream()
-        private var state = State.INITIAL
+        // Read on this connection's thread, set by accept() on another.
+        @Volatile private var state = State.INITIAL
+        /** Holds the TV's one transfer slot (see Drop.claim) from the request on the screen until the end. */
+        private var claimed = false
         private var device = "Android"
         private var keys: KeyPair? = null
         private var clientInit: ByteArray? = null
@@ -148,6 +175,8 @@ object QuickShare {
 
         fun run() {
             try {
+                // Phones send a keep-alive every 10 s, even while the TV asks: silence this long is a dead or idle connection.
+                socket.soTimeout = 120_000
                 socket.use {
                     while (!closed) {
                         val length = input.readInt()
@@ -163,8 +192,11 @@ object QuickShare {
                 // Anything not finished is a partial file: remove it and say so.
                 val partial = files.values.filter { it.target != null }
                 partial.forEach { f -> runCatching { f.sink?.close() }; f.target?.let(Drop::discard) }
-                if (state == State.WAITING_CONSENT) Drop.dismiss()
-                if (partial.isNotEmpty()) Drop.show(DropState.Failed(partial.first().name))
+                if (claimed) {
+                    if (state == State.WAITING_CONSENT) Drop.dismiss()
+                    if (partial.isNotEmpty()) Drop.show(DropState.Failed(partial.first().name))
+                    Drop.release()
+                }
             }
         }
 
@@ -303,11 +335,17 @@ object QuickShare {
             if (header.totalSize > SANE_FRAME_LENGTH) error("payload too large")
             val buffer = buffers.getOrPut(header.id) { java.io.ByteArrayOutputStream() }
             if (chunk.offset != buffer.size().toLong()) error("bytes payload offset")
+            // Checked against what came, not only what was announced: otherwise the buffer grows as long as chunks come.
+            if (buffer.size() + chunk.body.size() > header.totalSize) error("bytes payload larger than announced")
             buffer.write(chunk.body.toByteArray())
             if (chunk.flags and 1 == 0) return
             buffers.remove(header.id)
             val bytes = buffer.toByteArray()
-            if (header.id == textId && textId != 0L) return text(bytes)
+            if (header.id == textId && textId != 0L) {
+                // Only after Accept on the TV: before, any device on the network could fill the disk with .txt files.
+                if (state != State.RECEIVING) error("text before the TV accepted")
+                return text(bytes)
+            }
             sharing(Protocol.Frame.parseFrom(bytes))
         }
 
@@ -330,6 +368,12 @@ object QuickShare {
 
         /** What the phone wants to send: ask on the TV, with the PIN to compare. */
         private fun introduction(intro: Protocol.IntroductionFrame) {
+            // One transfer at a time on one screen: a second phone, or the page mid-upload, would hide this request.
+            if (!Drop.claim()) {
+                runCatching { sendSharing(Protocol.V1Frame.newBuilder().setType(Protocol.V1Frame.FrameType.RESPONSE).setConnectionResponse(Protocol.ConnectionResponseFrame.newBuilder().setStatus(Protocol.ConnectionResponseFrame.Status.REJECT))) }
+                return disconnect()
+            }
+            claimed = true
             state = State.WAITING_CONSENT
             val what: String
             val count: Int
@@ -356,25 +400,18 @@ object QuickShare {
             Drop.show(DropState.Incoming(device, pin, what, count, accept = { thread(isDaemon = true) { accept() } }, decline = { thread(isDaemon = true) { respond(Protocol.ConnectionResponseFrame.Status.REJECT) } }))
         }
 
+        /** Files are created as they arrive, not here: hundreds of photos opened at once would eat a TV box's memory. */
         @Synchronized private fun accept() {
             if (state != State.WAITING_CONSENT || closed) return
-            try {
-                files.values.forEach { f ->
-                    val target = Drop.create(f.name, f.mime, Drop.sorted)
-                    f.target = target
-                    f.sink = context.contentResolver.openOutputStream(target.uri)!!.buffered(256 * 1024)
-                }
-                state = State.RECEIVING
-                Drop.show(DropState.Receiving(files.values.firstOrNull()?.name ?: device, 0, total.coerceAtLeast(1)))
+            state = State.RECEIVING
+            Drop.show(DropState.Receiving(files.values.firstOrNull()?.name ?: device, 0, total.coerceAtLeast(1)))
+            runCatching {
                 sendSharing(
                     Protocol.V1Frame.newBuilder().setType(Protocol.V1Frame.FrameType.RESPONSE).setConnectionResponse(
                         Protocol.ConnectionResponseFrame.newBuilder().setStatus(Protocol.ConnectionResponseFrame.Status.ACCEPT),
                     ),
                 )
-            } catch (e: Exception) {
-                Log.w(TAG, "accept", e)
-                respond(Protocol.ConnectionResponseFrame.Status.REJECT)
-            }
+            }.onFailure { Log.w(TAG, "accept", it); disconnect() }
         }
 
         private fun respond(status: Protocol.ConnectionResponseFrame.Status) {
@@ -386,12 +423,17 @@ object QuickShare {
         }
 
         private fun fileChunk(id: Long, chunk: PayloadTransferFrame.PayloadChunk) {
+            if (state != State.RECEIVING) error("file data before the TV accepted")
             val f = files[id] ?: error("unknown file payload $id")
             if (chunk.offset != f.done) error("file offset ${chunk.offset}, expected ${f.done}")
             val body = chunk.body
             if (f.done + body.size() > f.size) error("file larger than announced")
+            val sink = f.sink ?: Drop.create(f.name, f.mime, Drop.sorted).let { target ->
+                f.target = target
+                (context.contentResolver.openOutputStream(target.uri) ?: error("no stream")).buffered(256 * 1024).also { f.sink = it }
+            }
             if (!body.isEmpty) {
-                body.writeTo(f.sink!!)
+                body.writeTo(sink)
                 f.done += body.size()
                 received += body.size()
                 // A few redraws a second at most, as for the phone page.
@@ -402,7 +444,9 @@ object QuickShare {
                 }
             }
             if (chunk.flags and 1 == 1) {
-                f.sink!!.close()
+                // Ended short of its announced size: a broken file, not a received one.
+                if (f.done != f.size) error("file ended at ${f.done} of ${f.size}")
+                sink.close()
                 f.sink = null
                 Drop.publish(f.target!!)
                 Drop.received(f.target!!, f.mime)
