@@ -194,6 +194,8 @@ private fun DropScreen() {
         SupportScreen(onClose = { support = false })
         return
     }
+    // Back on a received file, link or text means "done": back to the QR, not out of the app (and its server).
+    BackHandler(state is DropState.Received || state is DropState.Link || state is DropState.Text) { Drop.dismiss() }
 
     Room {
         Column(Modifier.fillMaxSize().padding(horizontal = 64.dp, vertical = 40.dp)) {

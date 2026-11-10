@@ -101,7 +101,13 @@ object QuickShare {
 
     /** What phones see in the sheet: the TV's name; the instance name and the "n" record are NearDrop's format. */
     private fun advertise(port: Int) {
-        val id = ByteArray(4).also { r -> val a = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"; r.indices.forEach { r[it] = a[SecureRandom().nextInt(a.length)].code.toByte() } }
+        // The same ID after every restart: a new one each time left the old "TV" in phones' and Macs'
+        // mDNS caches for an hour, a dead twin in the Share sheet.
+        val prefs = context.getSharedPreferences("quickshare", Context.MODE_PRIVATE)
+        val id = (prefs.getString("endpoint", null)?.takeIf { it.length == 4 } ?: run {
+            val a = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+            String(CharArray(4) { a[SecureRandom().nextInt(a.length)] }).also { prefs.edit().putString("endpoint", it).apply() }
+        }).toByteArray(Charsets.US_ASCII)
         // PCP 0x23, endpoint ID, service ID hash FC9F5E, two reserved bytes.
         val name = byteArrayOf(0x23) + id + byteArrayOf(0xFC.toByte(), 0x9F.toByte(), 0x5E, 0, 0)
         val info = NsdServiceInfo().apply {
