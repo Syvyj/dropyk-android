@@ -71,6 +71,7 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.core.net.toUri
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -222,7 +223,8 @@ private fun DropScreen() {
             }
 
             Row(Modifier.fillMaxWidth().height(56.dp), verticalAlignment = Alignment.CenterVertically) {
-                Box(Modifier.weight(1f)) {
+                // Room on the right: a focused button grows and would cover the end of a long status.
+                Box(Modifier.weight(1f).padding(end = 24.dp)) {
                     val pct = updating
                     when {
                         pct != null -> Status(stringResource(R.string.update_downloading, (pct * 100).toInt())) { Spinner() }
@@ -386,7 +388,7 @@ private fun FocusOnShow(requester: FocusRequester, key: Any) {
 private fun Status(text: String, color: Color = Ink, icon: @Composable () -> Unit) {
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
         icon()
-        Text(text, color = color, fontSize = 20.sp, maxLines = 2)
+        Text(text, color = color, fontSize = 20.sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
     }
 }
 

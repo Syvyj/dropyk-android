@@ -204,7 +204,12 @@ function send(file, li) {
       li.className = 'bad'; pct.textContent = t.errors[key] || t.failed;
       done(key);
     };
-    xhr.onerror = () => { li.className = 'bad'; pct.textContent = t.lost; done('lost'); };
+    // "Busy" comes back before the TV reads the file, and the browser, still sending, only sees the connection drop: ask why.
+    xhr.onerror = async () => {
+      let key = 'lost';
+      try { if ((await (await fetch('space', { cache: 'no-store' })).json()).busy) key = 'busy'; } catch (_) {}
+      li.className = 'bad'; pct.textContent = key === 'busy' ? t.errors.busy : t.lost; done(key);
+    };
     xhr.onabort = () => { li.className = 'bad'; pct.textContent = t.canceled; done('aborted'); };
     xhr.send(file);
   });

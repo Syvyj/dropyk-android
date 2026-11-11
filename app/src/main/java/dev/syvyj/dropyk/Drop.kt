@@ -207,7 +207,8 @@ object Drop {
                 if (_state.value == DropState.Waiting) _state.value = DropState.Connected
                 out.reply(200, "text/html", context.assets.open("phone.html").bufferedReader().readText())
             }
-            method == "GET" && route == "space" -> out.reply(200, "application/json", """{"free":${free()}}""")
+            // "busy" too: a refused upload reaches the browser as a dropped connection, and the page asks here why.
+            method == "GET" && route == "space" -> out.reply(200, "application/json", """{"free":${free()},"busy":${busy.get()}}""")
             // "link" is the old name: pages opened before 0.5 still post there.
             method == "POST" && (route == "text" || route == "link") && length > MAX_TEXT -> out.error(413, "too_long")
             method == "POST" && (route == "text" || route == "link") && length > 0 -> {

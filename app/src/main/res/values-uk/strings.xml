@@ -7,7 +7,7 @@
     <string name="connected">Телефон на зв\'язку — виберіть файли</string>
     <string name="receiving">Приймаю %1$s — %2$d%% з %3$s</string>
     <string name="received">Отримано %1$s (файлів за сеанс: %2$d)</string>
-    <string name="failed">%1$s прийшов не весь. Надішліть ще раз.</string>
+    <string name="failed">Обірвано: %1$s</string>
     <string name="watch">Дивитись</string>
     <string name="install">Встановити</string>
     <string name="open">Відкрити</string>

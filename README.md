@@ -22,6 +22,7 @@ From an Android phone it's shorter: with Dropyk open on the TV, **Share → Quic
 
 - **Photos, videos, APKs, any file** — one or a hundred at a time, sent one by one. Bytes go straight to the TV's storage, so a 4 GB film never passes through its memory; the page checks free space first. On a budget Google TV box over Wi‑Fi, files arrive at about 12–20 MB/s.
 - **Quick Share** — the TV shows up in the Share sheet of Android phones on the same Wi‑Fi, under its own name. Files, links and text; the TV asks before accepting.
+- **From a Mac with Quick Share** — [Dropyk for Mac](https://github.com/Syvyj/dropyk-mac) puts Dropyk in the Share menu of Finder and Safari; pick the TV.
 - **iPhone, iPad and Mac** — add the [Send to Dropyk](https://dropyk.syvyj.dev/shortcut/Send%20to%20Dropyk.shortcut) shortcut, type the TV's address once (it's under the QR code), and Dropyk shows up in the Share sheet for photos, videos and files.
 - **Links and text** — paste a link to open it on the TV, or any text (a Wi‑Fi password, a code) to show it big on the screen.
 - **Cancel any time** — *Stop sending* on the phone or *Cancel* on the TV; the half-received file is removed.

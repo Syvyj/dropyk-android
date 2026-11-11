@@ -8,7 +8,7 @@
     <string name="connected">Phone connected — choose files</string>
     <string name="receiving">Receiving %1$s — %2$d%% of %3$s</string>
     <string name="received">Received %1$s (files this session: %2$d)</string>
-    <string name="failed">%1$s didn\'t arrive in full. Send it again.</string>
+    <string name="failed">Cut off: %1$s</string>
     <string name="watch">Watch</string>
     <string name="install">Install</string>
     <string name="open">Open</string>
