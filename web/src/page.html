@@ -44,6 +44,7 @@
 <script defer src="{{root}}motion.js?v={{mver}}"></script>
 </head>
 <body>
+<div class="backdrop" aria-hidden="true"><div class="blob"></div></div>
 <a class="skip" href="#main">[[Skip to content||Перейти до змісту]]</a>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -89,6 +90,7 @@
     </div>
   </div>
   <div class="devices">
+    <div class="devices-tilt">
     <figure class="tv">
       <div class="tv-screen"><img src="{{root}}assets/{{lang}}-tv-waiting.webp" alt="[[Dropyk on a TV: Dropyk / Send to TV, a QR code, two steps and the fallback address||Dropyk на телевізорі: Dropyk / Надішліть на телевізор, QR-код, два кроки й запасна адреса]]" width="1440" height="810" fetchpriority="high"></div>
       <div class="tv-stand" aria-hidden="true"></div>
@@ -96,6 +98,7 @@
     <figure class="phone">
       <img src="{{root}}assets/{{lang}}-phone.webp" alt="[[The page on the phone: Choose files, free space on the TV, Downloads or By type, a link field and Support the author||Сторінка на телефоні: Вибрати файли, вільне місце на телевізорі, У завантаження чи За типом, поле для посилання й Підтримати автора]]" width="780" height="1440">
     </figure>
+    </div>
   </div>
 </section>
 

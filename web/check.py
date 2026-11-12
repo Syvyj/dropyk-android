@@ -62,6 +62,19 @@ def check_reveals():
         steps = page.split('<ol class="steps">')[1].split("</ol>")[0]
         assert "data-reveal" not in steps, f"{name}: steps belong to Task 5"
 
+
+def check_hero():
+    for name in PAGES:
+        page = read(name)
+        body = page.split("<body>")[1].lstrip()
+        assert body.startswith('<div class="backdrop" aria-hidden="true"><div class="blob"></div></div>'), f"{name}: .backdrop > .blob must open <body>"
+        devices = page.split('<div class="devices">')[1].split("</section>")[0]
+        tilt = devices.split('<div class="devices-tilt">')
+        assert len(tilt) == 2 and '<figure class="tv">' in tilt[1] and '<figure class="phone">' in tilt[1], f"{name}: .devices-tilt must wrap .tv and .phone"
+    css = read("style.css")
+    assert "radial-gradient(circle at 96% 4%" not in css, "the circle moved from body to .blob"
+    assert re.search(r"\.backdrop \{[^}]*overflow: hidden", css), ".backdrop must clip the circle: no sideways scrolling"
+
 if __name__ == "__main__":
     checks = [v for k, v in sorted(globals().items()) if k.startswith("check_")]
     for c in checks:

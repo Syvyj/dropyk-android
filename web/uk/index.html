@@ -36,14 +36,15 @@
 <link rel="icon" type="image/png" sizes="32x32" href="../assets/icon-32.png">
 <link rel="apple-touch-icon" href="../assets/icon-180.png">
 <link rel="preload" href="../fonts/manrope-latin.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="../style.css?v=4428ec20">
+<link rel="stylesheet" href="../style.css?v=f547b93e">
 <script defer src="../vendor/gsap/3.15.0/gsap.min.js"></script>
 <script defer src="../vendor/gsap/3.15.0/ScrollTrigger.min.js"></script>
 <script defer src="../vendor/gsap/3.15.0/SplitText.min.js"></script>
 <script defer src="../vendor/gsap/3.15.0/DrawSVGPlugin.min.js"></script>
-<script defer src="../motion.js?v=c27519c3"></script>
+<script defer src="../motion.js?v=02bf195d"></script>
 </head>
 <body>
+<div class="backdrop" aria-hidden="true"><div class="blob"></div></div>
 <a class="skip" href="#main">Перейти до змісту</a>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -89,6 +90,7 @@
     </div>
   </div>
   <div class="devices">
+    <div class="devices-tilt">
     <figure class="tv">
       <div class="tv-screen"><img src="../assets/uk-tv-waiting.webp" alt="Dropyk на телевізорі: Dropyk / Надішліть на телевізор, QR-код, два кроки й запасна адреса" width="1440" height="810" fetchpriority="high"></div>
       <div class="tv-stand" aria-hidden="true"></div>
@@ -96,6 +98,7 @@
     <figure class="phone">
       <img src="../assets/uk-phone.webp" alt="Сторінка на телефоні: Вибрати файли, вільне місце на телевізорі, У завантаження чи За типом, поле для посилання й Підтримати автора" width="780" height="1440">
     </figure>
+    </div>
   </div>
 </section>
 
