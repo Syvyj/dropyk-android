@@ -29,6 +29,32 @@
     onSplit: (self) => gsap.from(self.words, { yPercent: 110, duration: .8, ease: 'power3.out', stagger: .04, delay: .1 }),
   });
 
+  // The story on the TV, over and over while the hero is on screen: a drop leaves the phone,
+  // lands in the TV, the TV receives the file and offers to play it, then waits again.
+  const devices = document.querySelector('.devices');
+  const at = (sel, fx, fy) => {
+    const d = devices.getBoundingClientRect(), r = document.querySelector(sel).getBoundingClientRect();
+    return { x: r.left - d.left + r.width * fx - 17, y: r.top - d.top + r.height * fy - 24 };
+  };
+  const from = () => at('.phone', .5, .3), to = () => at('.tv-screen', .5, .5);
+  const [receiving, received] = $$('.tv-alt');
+  const story = gsap.timeline({ paused: true, repeat: -1, delay: .4 })
+    .set('.flyer', { x: () => from().x, y: () => from().y, scale: .6, opacity: 0 }, 2.4)
+    .to('.flyer', { x: () => to().x, duration: .9, ease: 'none' }, 2.4)
+    .to('.flyer', { keyframes: [
+      { y: () => Math.min(from().y, to().y) - 70, scale: 1, opacity: 1, duration: .45, ease: 'power2.out' },
+      { y: () => to().y, scale: .4, opacity: 0, duration: .45, ease: 'power2.in' },
+    ] }, 2.4)
+    .to(receiving, { opacity: 1, duration: .4 }, 3.2)
+    .to(received, { opacity: 1, duration: .4 }, 5.8)
+    .to([received, receiving], { opacity: 0, duration: .6 }, 8.6);
+  ScrollTrigger.addEventListener('refresh', () => story.invalidate());
+  let heroOn = true;
+  const run = () => (heroOn && intro.progress() === 1 && !document.hidden ? story.play() : story.pause());
+  intro.eventCallback('onComplete', run);
+  ScrollTrigger.create({ trigger: hero, start: 'top bottom', end: 'bottom top', onToggle: (self) => { heroOn = self.isActive; run(); } });
+  document.addEventListener('visibilitychange', run);
+
   // The circle drifts on its own; on wide screens the hero's layers scroll at different speeds.
   gsap.to('.blob', { x: '2vw', y: '2vw', scale: 1.06, duration: 12, ease: 'sine.inOut', yoyo: true, repeat: -1 });
   mm.add(wide, () => {

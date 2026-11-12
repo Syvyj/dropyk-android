@@ -92,8 +92,12 @@ main > section { max-width: var(--max); margin: 0 auto; padding: clamp(64px, 8vw
 /* Padding and the phone's anchor are on .devices-tilt: the tilt's transform would otherwise move the phone's containing block. */
 .devices-tilt { position: relative; padding: 0 13% 12% 0; }
 .tv { margin: 0; }
-.tv-screen { padding: 8px; background: #23263a; border-radius: 12px; box-shadow: 0 28px 60px rgba(40, 36, 100, .22); }
+.tv-screen { position: relative; padding: 8px; background: #23263a; border-radius: 12px; box-shadow: 0 28px 60px rgba(40, 36, 100, .22); }
 .tv-screen img { border-radius: 5px; }
+/* The hero's story (motion.js): the same TV receiving, then received, laid over the waiting screen. */
+.tv-alt { position: absolute; inset: 8px; width: calc(100% - 16px); opacity: 0; }
+.devices { position: relative; }
+.flyer { position: absolute; left: 0; top: 0; width: 34px; height: 47px; opacity: 0; pointer-events: none; z-index: 2; }
 .tv-stand { position: relative; height: 26px; margin: 0 18%; }
 .tv-stand::before, .tv-stand::after { content: ""; position: absolute; top: 0; width: 10px; height: 26px; background: #23263a; border-radius: 0 0 4px 4px; }
 .tv-stand::before { left: 0; transform: skewX(24deg); }

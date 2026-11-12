@@ -75,6 +75,19 @@ def check_hero():
     assert "radial-gradient(circle at 96% 4%" not in css, "the circle moved from body to .blob"
     assert re.search(r"\.backdrop \{[^}]*overflow: hidden", css), ".backdrop must clip the circle: no sideways scrolling"
 
+
+def check_story():
+    for name, root in PAGES.items():
+        page = read(name)
+        lang = "en" if root == "" else "uk"
+        screen = page.split('<div class="tv-screen">')[1].split("</div>")[0]
+        alts = re.findall(r'<img class="tv-alt" src="([^"]+)" alt="" aria-hidden="true"', screen)
+        want = [f"{root}assets/{lang}-tv-receiving.webp", f"{root}assets/{lang}-tv-received-video.webp"]
+        assert alts == want, f"{name}: tv-alt images {alts}, want {want}"
+        for a in alts:
+            assert os.path.isfile(os.path.join(HERE, a.replace("../", ""))), f"missing {a}"
+        assert '<svg class="flyer" aria-hidden="true"><use href="#drop"/></svg>' in page, f"{name}: no .flyer"
+
 if __name__ == "__main__":
     checks = [v for k, v in sorted(globals().items()) if k.startswith("check_")]
     for c in checks:
