@@ -49,6 +49,19 @@ def check_failsafe():
             assert part in h, f"{name}: failsafe lacks {part}"
 
 
+
+REVEALS = {"strip", "how-title", "features-title", "more", "mac", "install", "private", "support"}
+
+
+def check_reveals():
+    for name in PAGES:
+        page = read(name)
+        groups = re.findall(r'data-reveal="([\w-]+)"', page)
+        assert set(groups) == REVEALS, f"{name}: data-reveal groups {sorted(set(groups))}"
+        assert not re.search(r'<section class="hero"[^>]*data-reveal', page), f"{name}: hero must not be data-reveal"
+        steps = page.split('<ol class="steps">')[1].split("</ol>")[0]
+        assert "data-reveal" not in steps, f"{name}: steps belong to Task 5"
+
 if __name__ == "__main__":
     checks = [v for k, v in sorted(globals().items()) if k.startswith("check_")]
     for c in checks:
