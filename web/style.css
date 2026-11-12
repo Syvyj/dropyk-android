@@ -91,6 +91,8 @@ main > section { max-width: var(--max); margin: 0 auto; padding: clamp(64px, 8vw
 .hero { display: grid; grid-template-columns: 1.1fr 1fr; gap: clamp(28px, 4vw, 56px); align-items: center; padding-top: clamp(28px, 5vw, 64px) !important; }
 .pill { display: inline-block; background: var(--pill); color: var(--pill-ink); font-weight: 700; font-size: 15px; padding: 6px 14px; border-radius: 999px; margin-bottom: 22px; }
 .hero h1 { margin-bottom: 20px; }
+.stats { margin-top: 18px; color: var(--muted); font-size: 15px; }
+.stats b { color: var(--ink); font-variant-numeric: tabular-nums; }
 .cta { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 30px; margin-top: 32px; }
 
 /* Padding and the phone's anchor are on .devices-tilt: the tilt's transform would otherwise move the phone's containing block. */

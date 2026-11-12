@@ -118,6 +118,53 @@ def check_nav():
         for href in ("#how", "#install"):
             assert f'<a href="{href}">' in page.split("</nav>")[0], f"{name}: nav link {href}"
 
+
+def check_plural_uk():
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("build", os.path.join(HERE, "build.py"))
+    build = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(build)  # build.py only defines things on import; it builds under __main__
+    got = {n: build.plural_uk(n) for n in (1, 2, 5, 11, 21, 22, 25, 111)}
+    want = {1: "завантаження", 2: "завантаження", 5: "завантажень", 11: "завантажень",
+            21: "завантаження", 22: "завантаження", 25: "завантажень", 111: "завантажень"}
+    assert got == want, got
+
+
+def check_stats_offline():
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("build", os.path.join(HERE, "build.py"))
+    build = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(build)
+
+    def down(*a, **k):
+        raise OSError("offline")
+    build.urllib.request.urlopen = down
+    assert build.downloads("Syvyj/dropyk-android", ("dropyk.apk",)) is None
+    assert build.stats_line("en", (None, 40)) == "" and build.stats_line("uk", (80, None)) == ""
+
+
+def check_stats_shown():
+    assert re.search(r"\.fromTo\('\.hero \.stats'", read("motion.js")), "the hero entrance must bring .stats in: .hero-copy children start hidden"
+
+
+def check_stats():
+    for name, root in PAGES.items():
+        page = read(name)
+        if 'class="stats"' not in page:
+            continue
+        stats = page.split('<p class="stats">')[1].split("</p>")[0]
+        nums = re.findall(r'<b data-count="(\d+)">(\d+)</b>', stats)
+        assert len(nums) == 2 and all(a == b for a, b in nums), f"{name}: stats {stats}"
+        tv = int(nums[0][0])
+        if root == "":
+            word = "download" if tv == 1 else "downloads"
+            assert f"</b> {word} for the TV · <b" in stats and stats.endswith("</b> for the Mac"), f"{name}: {stats}"
+        else:
+            word = "завантаження" if tv % 10 in (1, 2, 3, 4) and tv % 100 not in (11, 12, 13, 14) else "завантажень"
+            assert f"</b> {word} для ТВ · <b" in stats and stats.endswith("</b> для Mac"), f"{name}: {stats}"
+    page = read("index.html")
+    assert 'class="stats"' in page, "no stats: was GitHub unreachable during the build?"
+
 if __name__ == "__main__":
     checks = [v for k, v in sorted(globals().items()) if k.startswith("check_")]
     for c in checks:

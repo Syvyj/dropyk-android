@@ -21,6 +21,11 @@
     .set('.hero h1', { opacity: 1 }, .1)
     .fromTo('.hero .lead', { opacity: 0, y: 16 }, { opacity: 1, y: 0 }, .45)
     .fromTo('.hero .cta', { opacity: 0, y: 16 }, { opacity: 1, y: 0 }, .55)
+    .fromTo('.hero .stats', { opacity: 0, y: 16 }, { opacity: 1, y: 0 }, .7)
+    .add(() => {
+      // The download counts run up from zero.
+      for (const b of $$('.stats b')) gsap.from(b, { textContent: 0, duration: 1.2, ease: 'power2.out', snap: { textContent: 1 } });
+    }, .7)
     .fromTo('.hero .tv', { opacity: 0, y: 40, scale: .96 }, { opacity: 1, y: 0, scale: 1, duration: 1.1 }, .15)
     .fromTo('.hero .phone', { opacity: 0, x: 40, y: 30, rotation: 4 }, { opacity: 1, x: 0, y: 0, rotation: 0, duration: 1.1 }, .35);
   // Words, not letters: Ukrainian headings are long, and the line breaks must stay where the browser put them.

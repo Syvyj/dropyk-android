@@ -4,8 +4,10 @@ picks one side per language; {{name}} fills a value. Run: python3 web/build.py
 Preview: python3 -m http.server -d web 8090"""
 import hashlib
 import html
+import json
 import os
 import re
+import urllib.request
 
 SITE = "https://dropyk.syvyj.dev/"
 REPO = "https://github.com/Syvyj/dropyk-android"
@@ -13,6 +15,8 @@ REPO = "https://github.com/Syvyj/dropyk-android"
 DOWNLOAD = REPO + "/releases/latest/download/dropyk.apk"
 MAC_REPO = "https://github.com/Syvyj/dropyk-mac"
 MAC_DOWNLOAD = MAC_REPO + "/releases/latest/download/Dropyk.dmg"
+REPO_API = "Syvyj/dropyk-android"
+MAC_API = "Syvyj/dropyk-mac"
 
 # Donation links — the same as Likhtar's and the app's support screen. Monobank first in Ukrainian.
 DONATE = [
@@ -33,14 +37,42 @@ def donate_block(lang):
     )
 
 
+def downloads(repo, names):
+    """Downloads of the named release files over all releases (the in-app updaters' too); None if GitHub can't be reached."""
+    req = urllib.request.Request(f"https://api.github.com/repos/{repo}/releases?per_page=100",
+                                 headers={"Accept": "application/vnd.github+json", "User-Agent": "dropyk-site-build"})
+    try:
+        with urllib.request.urlopen(req, timeout=10) as r:
+            releases = json.load(r)
+    except (OSError, ValueError) as e:
+        print(f"no download count for {repo}: {e}")
+        return None
+    return sum(a["download_count"] for rel in releases for a in rel["assets"] if a["name"] in names)
+
+
+def plural_uk(n):
+    """завантаження for 1, 2–4 (not 11–14), 21, 22…; завантажень otherwise."""
+    return "завантаження" if n % 10 in (1, 2, 3, 4) and n % 100 not in (11, 12, 13, 14) else "завантажень"
+
+
+def stats_line(lang, stats):
+    tv, mac = stats
+    if tv is None or mac is None:
+        return ""
+    b = lambda n: f'<b data-count="{n}">{n}</b>'
+    if lang == "en":
+        return f'<p class="stats">{b(tv)} {"download" if tv == 1 else "downloads"} for the TV · {b(mac)} for the Mac</p>'
+    return f'<p class="stats">{b(tv)} {plural_uk(tv)} для ТВ · {b(mac)} для Mac</p>'
+
+
 def ver(name):
     """A new version of a file gets a new URL, so browsers don't keep the old one."""
     return hashlib.sha1(open(os.path.join(HERE, name), "rb").read()).hexdigest()[:8]
 
 
-def render(template, lang):
+def render(template, lang, stats=(None, None)):
     side = 0 if lang == "en" else 1
-    page = template.replace("{{donate}}", donate_block(lang))
+    page = template.replace("{{donate}}", donate_block(lang)).replace("{{stats}}", stats_line(lang, stats))
     page = re.sub(r"\[\[(.*?)\|\|(.*?)\]\]", lambda m: m.group(1 + side), page, flags=re.S)
     root = "" if lang == "en" else "../"
     values = {
@@ -66,25 +98,33 @@ def write(out, text):
     print("wrote", out)
 
 
-template = open(os.path.join(HERE, "src/page.html"), encoding="utf-8").read()
-write("index.html", render(template, "en"))
-write("uk/index.html", render(template, "uk"))
-write("robots.txt", f"User-agent: *\nAllow: /\n\nSitemap: {SITE}sitemap.xml\n")
 
-# Two language pages, each pointing at its sibling, so search engines don't treat them as duplicates.
-ALTS = "".join(
-    f'\n    <xhtml:link rel="alternate" hreflang="{l}" href="{SITE}{p}"/>'
-    for l, p in (("en", ""), ("uk", "uk/"), ("x-default", ""))
-)
-write("sitemap.xml", '<?xml version="1.0" encoding="UTF-8"?>\n'
-      '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n'
-      + "".join(f"  <url>\n    <loc>{SITE}{p}</loc>{ALTS}\n  </url>\n" for p in ("", "uk/"))
-      + "</urlset>\n")
+def main():
+    template = open(os.path.join(HERE, "src/page.html"), encoding="utf-8").read()
+    # Downloads, counted on GitHub when the site is built: visitors' browsers ask nobody.
+    stats = (downloads(REPO_API, ("dropyk.apk",)), downloads(MAC_API, ("Dropyk.dmg", "Dropyk.zip")))
+    write("index.html", render(template, "en", stats))
+    write("uk/index.html", render(template, "uk", stats))
+    write("robots.txt", f"User-agent: *\nAllow: /\n\nSitemap: {SITE}sitemap.xml\n")
 
-# Browsers ask for /favicon.ico on their own. An ICO with a PNG inside: one header over the 32×32 icon.
-png = open(os.path.join(HERE, "assets/icon-32.png"), "rb").read()
-ico = (0).to_bytes(2, "little") + (1).to_bytes(2, "little") + (1).to_bytes(2, "little") \
-    + bytes([32, 32, 0, 0]) + (1).to_bytes(2, "little") + (32).to_bytes(2, "little") \
-    + len(png).to_bytes(4, "little") + (22).to_bytes(4, "little") + png
-open(os.path.join(HERE, "favicon.ico"), "wb").write(ico)
-print("wrote favicon.ico")
+    # Two language pages, each pointing at its sibling, so search engines don't treat them as duplicates.
+    ALTS = "".join(
+        f'\n    <xhtml:link rel="alternate" hreflang="{l}" href="{SITE}{p}"/>'
+        for l, p in (("en", ""), ("uk", "uk/"), ("x-default", ""))
+    )
+    write("sitemap.xml", '<?xml version="1.0" encoding="UTF-8"?>\n'
+          '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n'
+          + "".join(f"  <url>\n    <loc>{SITE}{p}</loc>{ALTS}\n  </url>\n" for p in ("", "uk/"))
+          + "</urlset>\n")
+
+    # Browsers ask for /favicon.ico on their own. An ICO with a PNG inside: one header over the 32×32 icon.
+    png = open(os.path.join(HERE, "assets/icon-32.png"), "rb").read()
+    ico = (0).to_bytes(2, "little") + (1).to_bytes(2, "little") + (1).to_bytes(2, "little") \
+        + bytes([32, 32, 0, 0]) + (1).to_bytes(2, "little") + (32).to_bytes(2, "little") \
+        + len(png).to_bytes(4, "little") + (22).to_bytes(4, "little") + png
+    open(os.path.join(HERE, "favicon.ico"), "wb").write(ico)
+    print("wrote favicon.ico")
+
+
+if __name__ == "__main__":
+    main()
