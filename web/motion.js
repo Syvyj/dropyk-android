@@ -3,10 +3,14 @@
 // if this file hasn't started by then — so a blocked or slow script never leaves content invisible.
 (() => {
   const root = document.documentElement;
-  const ready = !!window.gsap && root.classList.contains('motion');
-  if (!ready) return;
+  // All four files, or none of it: one missing plugin must not leave the page hidden.
+  const ready = window.gsap && window.ScrollTrigger && window.SplitText && window.DrawSVGPlugin && root.classList.contains('motion');
+  if (!ready) { root.classList.remove('motion'); return; }
   window.dropykMotion = true;
   gsap.registerPlugin(ScrollTrigger, SplitText, DrawSVGPlugin);
+  // Anything that throws below undoes what ran and shows the page as it is without motion.
+  const ctx = gsap.context(() => {});
+  try { ctx.add(() => {
   const $$ = (sel, el = document) => [...el.querySelectorAll(sel)];
   const IN = { duration: .8, ease: 'power3.out', y: 28, stagger: .08 };
 
@@ -16,6 +20,14 @@
 
   // Hero: the copy rises line by line, the TV and the phone slide into place.
   const hero = document.querySelector('.hero');
+  // On wide screens the hero's layers scroll at different speeds. Set up before the entrance:
+  // matchMedia restores what it found when the screen narrows, and it must find the phone untouched.
+  mm.add(wide, () => {
+    const scroll = { trigger: hero, start: 'top top', end: 'bottom top', scrub: true };
+    gsap.to('.devices', { yPercent: -6, ease: 'none', scrollTrigger: scroll });
+    gsap.to('.phone', { yPercent: -12, ease: 'none', scrollTrigger: { ...scroll } });
+    gsap.to('.blob', { yPercent: 30, ease: 'none', scrollTrigger: { ...scroll } });
+  });
   const intro = gsap.timeline({ defaults: { duration: .9, ease: 'power3.out' } })
     .fromTo('.hero .pill', { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: .6 }, 0)
     .set('.hero h1', { opacity: 1 }, .1)
@@ -43,7 +55,9 @@
   };
   const from = () => at('.phone', .5, .3), to = () => at('.tv-screen', .5, .5);
   const [receiving, received] = $$('.tv-alt');
-  const story = gsap.timeline({ paused: true, repeat: -1, delay: .4 })
+  const story = gsap.timeline({ paused: true, repeat: -1, delay: .4,
+    // The flight is measured afresh at each loop's start, when every part is back at its start state.
+    repeatRefresh: true })
     .set('.flyer', { x: () => from().x, y: () => from().y, scale: .6, opacity: 0 }, 2.4)
     .to('.flyer', { x: () => to().x, duration: .9, ease: 'none' }, 2.4)
     .to('.flyer', { keyframes: [
@@ -53,21 +67,14 @@
     .to(receiving, { opacity: 1, duration: .4 }, 3.2)
     .to(received, { opacity: 1, duration: .4 }, 5.8)
     .to([received, receiving], { opacity: 0, duration: .6 }, 8.6);
-  ScrollTrigger.addEventListener('refresh', () => story.invalidate());
   let heroOn = true;
   const run = () => (heroOn && intro.progress() === 1 && !document.hidden ? story.play() : story.pause());
   intro.eventCallback('onComplete', run);
   ScrollTrigger.create({ trigger: hero, start: 'top bottom', end: 'bottom top', onToggle: (self) => { heroOn = self.isActive; run(); } });
   document.addEventListener('visibilitychange', run);
 
-  // The circle drifts on its own; on wide screens the hero's layers scroll at different speeds.
+  // The circle drifts on its own.
   gsap.to('.blob', { x: '2vw', y: '2vw', scale: 1.06, duration: 12, ease: 'sine.inOut', yoyo: true, repeat: -1 });
-  mm.add(wide, () => {
-    const scroll = { trigger: hero, start: 'top top', end: 'bottom top', scrub: true };
-    gsap.to('.devices', { yPercent: -6, ease: 'none', scrollTrigger: scroll });
-    gsap.to('.phone', { yPercent: -12, ease: 'none', scrollTrigger: { ...scroll } });
-    gsap.to('.blob', { yPercent: 30, ease: 'none', scrollTrigger: { ...scroll } });
-  });
 
   // The devices lean towards the pointer, a little.
   mm.add(hover, () => {
@@ -204,4 +211,9 @@
     const el = e.target.closest('[data-reveal]');
     if (el && reveals.has(el)) reveals.get(el).progress(1);
   });
+  }); } catch (e) {
+    ctx.revert();
+    root.classList.remove('motion');
+    console.error('motion off:', e);
+  }
 })();

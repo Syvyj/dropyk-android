@@ -165,6 +165,13 @@ def check_stats():
     page = read("index.html")
     assert 'class="stats"' in page, "no stats: was GitHub unreachable during the build?"
 
+
+def check_motion_guard():
+    js = read("motion.js")
+    assert "window.gsap && window.ScrollTrigger && window.SplitText && window.DrawSVGPlugin" in js, "ready needs every plugin"
+    assert "if (!ready) { root.classList.remove('motion'); return; }" in js, "not ready: show the page now"
+    assert re.search(r"catch \(e\) \{\s*ctx\.revert\(\);\s*root\.classList\.remove\('motion'\);", js), "an error must revert and show the page"
+
 if __name__ == "__main__":
     checks = [v for k, v in sorted(globals().items()) if k.startswith("check_")]
     for c in checks:
