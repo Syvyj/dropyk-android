@@ -182,3 +182,6 @@ main > section { max-width: var(--max); margin: 0 auto; padding: clamp(64px, 8vw
   .phone img { border-radius: 14px; }
 }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+/* Motion (motion.js): hidden only while .motion is on <html>, which the head script takes off after 3 s if motion.js never starts. */
+.motion [data-reveal] { opacity: 0; }

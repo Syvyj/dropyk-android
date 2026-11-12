@@ -27,11 +27,21 @@
   }
   let picked; try { picked = localStorage.theme; } catch (e) {}
   theme(picked || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
+  // Motion: not for visitors who asked for less; and if motion.js hasn't started in 3 s, show everything as is.
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    document.documentElement.classList.add('motion');
+    setTimeout(() => { if (!window.dropykMotion) document.documentElement.classList.remove('motion'); }, 3000);
+  }
 </script>
 <link rel="icon" type="image/png" sizes="32x32" href="assets/icon-32.png">
 <link rel="apple-touch-icon" href="assets/icon-180.png">
 <link rel="preload" href="fonts/manrope-latin.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="style.css?v=7d44fa94">
+<link rel="stylesheet" href="style.css?v=4428ec20">
+<script defer src="vendor/gsap/3.15.0/gsap.min.js"></script>
+<script defer src="vendor/gsap/3.15.0/ScrollTrigger.min.js"></script>
+<script defer src="vendor/gsap/3.15.0/SplitText.min.js"></script>
+<script defer src="vendor/gsap/3.15.0/DrawSVGPlugin.min.js"></script>
+<script defer src="motion.js?v=4e71c506"></script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>

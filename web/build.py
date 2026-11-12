@@ -33,15 +33,18 @@ def donate_block(lang):
     )
 
 
+def ver(name):
+    """A new version of a file gets a new URL, so browsers don't keep the old one."""
+    return hashlib.sha1(open(os.path.join(HERE, name), "rb").read()).hexdigest()[:8]
+
+
 def render(template, lang):
     side = 0 if lang == "en" else 1
     page = template.replace("{{donate}}", donate_block(lang))
     page = re.sub(r"\[\[(.*?)\|\|(.*?)\]\]", lambda m: m.group(1 + side), page, flags=re.S)
     root = "" if lang == "en" else "../"
-    # A new version of the CSS gets a new URL, so browsers don't keep the old one.
-    ver = hashlib.sha1(open(os.path.join(HERE, "style.css"), "rb").read()).hexdigest()[:8]
     values = {
-        "ver": ver, "lang": lang, "root": root, "download": DOWNLOAD, "repo": REPO,
+        "ver": ver("style.css"), "mver": ver("motion.js"), "lang": lang, "root": root, "download": DOWNLOAD, "repo": REPO,
         "mac_download": MAC_DOWNLOAD, "mac_repo": MAC_REPO,
         # Each language gets its own shortcut: the name it imports with is the file's name.
         "shortcut": root + "shortcut/" + ("Send%20to%20Dropyk.shortcut" if lang == "en" else
