@@ -108,6 +108,16 @@ def check_hidden_only_under_motion():
         assert want in sels, f"hide rule lacks {want}"
     assert css.count("opacity: 0") == css.count("{ opacity: 0; }") + 2, "no other unconditional opacity: 0 besides .tv-alt and .flyer"
 
+
+def check_nav():
+    css = read("style.css")
+    assert re.search(r"\.nav nav a\.is-here \{[^}]*color: var\(--accent\)", css), "nav link .is-here colour"
+    assert re.search(r"\.nav\.scrolled \{[^}]*box-shadow: 0 8px 24px rgba\(40, 36, 100, \.10\)", css), ".nav.scrolled shadow"
+    for name in PAGES:
+        page = read(name)
+        for href in ("#how", "#install"):
+            assert f'<a href="{href}">' in page.split("</nav>")[0], f"{name}: nav link {href}"
+
 if __name__ == "__main__":
     checks = [v for k, v in sorted(globals().items()) if k.startswith("check_")]
     for c in checks:

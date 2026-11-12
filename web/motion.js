@@ -171,6 +171,25 @@
     return () => off.forEach((f) => f());
   });
 
+  // The menu steps aside while you read down and comes back on the way up; it marks the section you're in.
+  const nav = document.querySelector('.nav');
+  const hideNav = gsap.to(nav, { yPercent: -100, duration: .3, ease: 'power2.out', paused: true });
+  ScrollTrigger.create({ start: 0, end: 'max', onUpdate: (self) => {
+    nav.classList.toggle('scrolled', self.scroll() > 8);
+    if (self.direction > 0 && self.scroll() > 120 && !nav.contains(document.activeElement)) hideNav.play();
+    else if (self.direction < 0) hideNav.reverse();
+  } });
+  nav.addEventListener('focusin', () => hideNav.reverse());
+  for (const id of ['how', 'install']) {
+    const link = nav.querySelector(`nav a[href="#${id}"]`);
+    ScrollTrigger.create({ trigger: `#${id}`, start: 'top center', end: 'bottom center',
+      onToggle: (self) => link.classList.toggle('is-here', self.isActive) });
+  }
+  // Light or dark: the half-moon turns over.
+  document.querySelector('.theme').addEventListener('click', () => {
+    gsap.fromTo('.theme svg', { rotation: 0 }, { rotation: 180, duration: .5, ease: 'power2.inOut' });
+  });
+
   // Already above the screen (an anchor link, a reload halfway down): shown, not replayed.
   const settle = () => reveals.forEach((tl, el) => { if (el.getBoundingClientRect().bottom < 0) tl.progress(1); });
   settle();

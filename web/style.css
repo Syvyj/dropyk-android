@@ -74,6 +74,10 @@ a:focus-visible, .btn:focus-visible { outline: 3px solid var(--accent); outline-
 .nav nav { display: flex; gap: 32px; margin-right: auto; }
 .nav nav a { color: var(--ink); text-decoration: none; font-weight: 600; }
 .nav nav a:hover { color: var(--accent); }
+/* motion.js: the section on screen, and a shadow once the page has scrolled under the menu. */
+.nav nav a.is-here { color: var(--accent); }
+.nav { transition: box-shadow .3s; }
+.nav.scrolled { box-shadow: 0 8px 24px rgba(40, 36, 100, .10); }
 .nav-tools { display: flex; align-items: center; gap: 22px; margin-left: auto; }
 .lang { color: var(--ink); text-decoration: none; font-weight: 700; }
 .theme { display: grid; place-items: center; width: 40px; height: 40px; padding: 0; border: 0; border-radius: 12px; background: none; color: var(--ink); cursor: pointer; }
