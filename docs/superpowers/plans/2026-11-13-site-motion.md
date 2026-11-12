@@ -153,7 +153,22 @@
 - [ ] **Step 4:** у браузері: прокрутка вниз ховає меню, угору повертає; Tab по меню, коли воно сховане, — показує його; «Як це працює» підсвічено, коли розділ посередині екрана.
 - [ ] **Step 5: Commit** `site: nav hides on scroll down, marks the current section, spins the theme icon`.
 
-### Task 8: Підсумкова перевірка й викладення
+### Task 8: Кількість завантажень у героя (додано 13.11 на прохання автора)
+
+**Files:**
+- Modify: `web/build.py`, `web/src/page.html` (`.hero-copy`, після `.cta`), `web/style.css`, `web/motion.js`, `web/check.py`
+
+**Interfaces:**
+- Consumes: `ready`, вхідний таймлайн `intro` героя (Task 3).
+- Produces: `downloads(repo: str, names: tuple[str, ...]) -> int | None` у `build.py` — сума `download_count` ассетів із цими іменами по всіх релізах (`https://api.github.com/repos/{repo}/releases?per_page=100`, urllib, тайм-аут 10 с), `None` при будь-якій помилці мережі; шаблонне значення `{{stats}}` — `<p class="stats">…</p>` або порожній рядок; числа як `<b data-count="80">80</b>`.
+
+- [ ] **Step 1:** у `check.py` — `check_stats()`: якщо в сторінці є `class="stats"`, то в ній рівно два `<b data-count="N">N</b>` з цілими N ≥ 0 і правильною формою слова (`1 download` / `N downloads`; `1 завантаження`, `2–4 завантаження`, `5+` і `11–14 завантажень`); окремо — `plural_uk(n)` з `build.py` для 1, 2, 5, 11, 21, 22, 25, 111.
+- [ ] **Step 2:** `python3 web/build.py && python3 web/check.py` → FAIL.
+- [ ] **Step 3:** `build.py`: TV — `("Syvyj/dropyk-android", ("dropyk.apk",))`, Mac — `("Syvyj/dropyk-mac", ("Dropyk.dmg", "Dropyk.zip"))` (без `.sha256`); рядок `80 downloads for the TV · 40 for the Mac` / `80 завантажень для ТВ · 40 для Mac`; без мережі рядка немає, збірка не падає. CSS: `.stats { margin-top: 18px; color: var(--muted); font-size: 15px; } .stats b { color: var(--ink); font-variant-numeric: tabular-nums; }`. `motion.js`: у `intro` о .7 с рядок проявляється, числа від 0 до `data-count` (`duration: 1.2`, `snap: 1`, `power2.out`).
+- [ ] **Step 4:** `python3 web/build.py && python3 web/check.py` → PASS; у браузері числа доходять рівно до `data-count`; без JS видно ті самі числа.
+- [ ] **Step 5: Commit** `site: download counts in the hero, from GitHub at build time`.
+
+### Task 9: Підсумкова перевірка й викладення
 
 **Files:**
 - Modify: — (лише перевірка й деплой)
