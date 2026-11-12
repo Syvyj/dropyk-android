@@ -96,6 +96,21 @@
     reveals.set(el, tl);
     ScrollTrigger.create({ trigger: el, start: 'top 85%', once: true, onEnter: () => tl.play() });
   }
+  // How it works: the steps come in one by one, their numbers pop, their icons draw themselves.
+  const stepsEl = document.querySelector('.steps');
+  const stepsTl = gsap.timeline({ paused: true })
+    .fromTo('.steps li', { opacity: 0, y: IN.y }, { ...IN, opacity: 1, y: 0, stagger: .12 })
+    .from('.steps .num', { scale: .4, duration: .5, ease: 'back.out(2)', stagger: .12 }, .2)
+    .from('.steps .icon [stroke]', { drawSVG: '0%', duration: 1, ease: 'power2.inOut', stagger: .05,
+      // Drawn: hand the strokes back to the plain SVG, exactly as without motion.
+      onComplete() { this.targets().forEach((t) => { t.style.strokeDasharray = ''; t.style.strokeDashoffset = ''; }); } }, .3);
+  reveals.set(stepsEl, stepsTl);
+  ScrollTrigger.create({ trigger: stepsEl, start: 'top 85%', once: true, onEnter: () => stepsTl.play() });
+  mm.add(wide, () => {
+    gsap.fromTo('.steps-line', { scaleX: 0 }, { scaleX: 1, ease: 'none',
+      scrollTrigger: { trigger: '.how', start: 'top 75%', end: 'bottom 60%', scrub: true } });
+  });
+
   // Already above the screen (an anchor link, a reload halfway down): shown, not replayed.
   const settle = () => reveals.forEach((tl, el) => { if (el.getBoundingClientRect().bottom < 0) tl.progress(1); });
   settle();

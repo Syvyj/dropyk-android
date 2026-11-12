@@ -88,6 +88,15 @@ def check_story():
             assert os.path.isfile(os.path.join(HERE, a.replace("../", ""))), f"missing {a}"
         assert '<svg class="flyer" aria-hidden="true"><use href="#drop"/></svg>' in page, f"{name}: no .flyer"
 
+
+def check_steps():
+    for name in PAGES:
+        steps = read(name).split('<ol class="steps">')[1].split("</ol>")[0]
+        assert steps.lstrip().startswith('<span class="steps-line" aria-hidden="true"></span>'), f"{name}: .steps-line must open .steps"
+        assert steps.count("<li>") == 3, f"{name}: three steps"
+    css = read("style.css")
+    assert re.search(r"\.steps-line \{[^}]*display: none", css) and re.search(r"min-width: 921px\) \{[^}]*\.steps-line \{ display: block", css), ".steps-line only on wide screens"
+
 if __name__ == "__main__":
     checks = [v for k, v in sorted(globals().items()) if k.startswith("check_")]
     for c in checks:

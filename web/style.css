@@ -113,7 +113,7 @@ main > section { max-width: var(--max); margin: 0 auto; padding: clamp(64px, 8vw
 .strip svg { width: 26px; height: 26px; color: var(--accent); }
 
 .how h2 { text-align: center; }
-.steps { list-style: none; padding: 0; margin: 36px 0 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+.steps { position: relative; list-style: none; padding: 0; margin: 36px 0 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
 .steps li { display: grid; grid-template-columns: auto 1fr; gap: 14px 18px; align-items: start; background: var(--card); border-radius: 22px;
             padding: 24px; position: relative; }
 .num { position: absolute; top: 18px; left: 18px; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center;
@@ -121,6 +121,9 @@ main > section { max-width: var(--max); margin: 0 auto; padding: clamp(64px, 8vw
 .icon { width: 76px; height: 66px; margin-top: 34px; color: var(--icon); }
 .steps h3 { margin: 10px 0 6px; }
 .steps p { color: var(--muted); }
+/* A track over the three steps that fills as the section scrolls by (motion.js); wide screens only. */
+.steps-line { display: none; position: absolute; left: 0; right: 0; top: -16px; height: 3px; border-radius: 3px; background: var(--grad); transform-origin: left; }
+@media (min-width: 921px) { .steps-line { display: block; } }
 
 .features h2 { margin-bottom: 8px; }
 .feature { display: grid; grid-template-columns: 1.25fr 1fr; gap: clamp(24px, 4vw, 56px); align-items: center; margin-top: 40px; }
@@ -191,4 +194,4 @@ main > section { max-width: var(--max); margin: 0 auto; padding: clamp(64px, 8vw
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 
 /* Motion (motion.js): hidden only while .motion is on <html>, which the head script takes off after 3 s if motion.js never starts. */
-.motion [data-reveal], .motion .hero-copy > *, .motion .devices-tilt > figure { opacity: 0; }
+.motion [data-reveal], .motion .hero-copy > *, .motion .devices-tilt > figure, .motion .steps li { opacity: 0; }
