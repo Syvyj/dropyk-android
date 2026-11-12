@@ -97,6 +97,17 @@ def check_steps():
     css = read("style.css")
     assert re.search(r"\.steps-line \{[^}]*display: none", css) and re.search(r"min-width: 921px\) \{[^}]*\.steps-line \{ display: block", css), ".steps-line only on wide screens"
 
+
+def check_hidden_only_under_motion():
+    css = read("style.css")
+    rule = re.search(r"\n(\.motion [^{]+)\{ opacity: 0; \}", css)
+    assert rule, "one .motion hide rule"
+    sels = [s.strip() for s in rule.group(1).split(",")]
+    assert all(s.startswith(".motion ") for s in sels), sels
+    for want in (".motion .feature > *", ".motion .mac img"):
+        assert want in sels, f"hide rule lacks {want}"
+    assert css.count("opacity: 0") == css.count("{ opacity: 0; }") + 2, "no other unconditional opacity: 0 besides .tv-alt and .flyer"
+
 if __name__ == "__main__":
     checks = [v for k, v in sorted(globals().items()) if k.startswith("check_")]
     for c in checks:

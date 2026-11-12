@@ -194,4 +194,7 @@ main > section { max-width: var(--max); margin: 0 auto; padding: clamp(64px, 8vw
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 
 /* Motion (motion.js): hidden only while .motion is on <html>, which the head script takes off after 3 s if motion.js never starts. */
-.motion [data-reveal], .motion .hero-copy > *, .motion .devices-tilt > figure, .motion .steps li { opacity: 0; }
+.motion [data-reveal], .motion .hero-copy > *, .motion .devices-tilt > figure, .motion .steps li, .motion .feature > *, .motion .mac img { opacity: 0; }
+/* Hover lift (motion.js adds .lifted): the same soft shadow the screenshots have. */
+.lifted { box-shadow: 0 18px 44px rgba(40, 36, 100, .14); }
+.more-card, .private li, .install li, .give { transition: box-shadow .25s; }

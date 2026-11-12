@@ -111,6 +111,66 @@
       scrollTrigger: { trigger: '.how', start: 'top 75%', end: 'bottom 60%', scrub: true } });
   });
 
+  // What it does: each row's picture comes in from its own side, uncovering itself; the words follow.
+  for (const row of $$('.feature')) {
+    const [media, text] = row.children;
+    const side = () => (matchMedia(wide).matches ? (media.getBoundingClientRect().left < text.getBoundingClientRect().left ? -48 : 48) : 0);
+    const tl = gsap.timeline({ paused: true });
+    if (media.classList.contains('where')) {
+      gsap.set(media, { opacity: 1 });
+      tl.fromTo(media.children, { opacity: 0, x: side, y: () => (side() ? 0 : IN.y) }, { ...IN, opacity: 1, x: 0, y: 0, stagger: .12 });
+    } else {
+      tl.fromTo(media, { opacity: 0, x: side, y: () => (side() ? 0 : IN.y) }, { ...IN, opacity: 1, x: 0, y: 0 });
+      if (media.tagName === 'IMG') {
+        tl.fromTo(media, { clipPath: () => (side() > 0 ? 'inset(0 0 0 100%)' : 'inset(0 100% 0 0)') },
+          { clipPath: 'inset(0% 0% 0% 0%)', duration: 1, ease: 'power3.inOut', clearProps: 'clipPath' }, 0);
+      }
+    }
+    tl.fromTo(text, { opacity: 0, y: IN.y }, { ...IN, opacity: 1, y: 0 }, .15);
+    // The Quick Share prompt: someone presses Accept.
+    if (media.classList.contains('qs-card')) {
+      tl.to(media.querySelector('.on'), { scale: .94, duration: .15, ease: 'power2.in' }, .9)
+        .to(media.querySelector('.on'), { scale: 1, duration: .3, ease: 'back.out(3)' })
+        .fromTo(media, { y: 0 }, { y: -6, duration: .15, yoyo: true, repeat: 1, ease: 'power1.out' }, '<');
+    }
+    reveals.set(row, tl);
+    ScrollTrigger.create({ trigger: row, start: 'top 85%', once: true, onEnter: () => tl.play() });
+  }
+
+  // Dropyk for Mac: the icon appears with its card, then floats.
+  const macIcon = document.querySelector('.mac img');
+  const macTl = gsap.timeline({ paused: true })
+    .fromTo(macIcon, { opacity: 0, scale: .9 }, { opacity: 1, scale: 1, duration: .8, ease: 'back.out(1.6)' })
+    .add(() => gsap.to(macIcon, { yPercent: -5, duration: 3, ease: 'sine.inOut', yoyo: true, repeat: -1 }));
+  reveals.set(macIcon, macTl);
+  ScrollTrigger.create({ trigger: '.mac', start: 'top 85%', once: true, onEnter: () => macTl.play() });
+
+  // A pointer (or the keyboard) on a card lifts it a little.
+  mm.add(hover, () => {
+    const off = [];
+    for (const card of $$('.more-card, .private li, .install li, .give')) {
+      const up = () => { card.classList.add('lifted'); gsap.to(card, { y: -4, duration: .25, ease: 'power2.out' }); };
+      const down = () => { card.classList.remove('lifted'); gsap.to(card, { y: 0, duration: .25, ease: 'power2.out' }); };
+      for (const [ev, fn] of [['pointerenter', up], ['pointerleave', down], ['focusin', up], ['focusout', down]]) {
+        card.addEventListener(ev, fn); off.push(() => card.removeEventListener(ev, fn));
+      }
+    }
+    // Big buttons lean towards the pointer and spring back.
+    for (const btn of $$('.btn:not(.btn-small)')) {
+      const bx = gsap.quickTo(btn, 'x', { duration: .3, ease: 'power3.out' });
+      const by = gsap.quickTo(btn, 'y', { duration: .3, ease: 'power3.out' });
+      const move = (e) => {
+        const r = btn.getBoundingClientRect();
+        bx(gsap.utils.clamp(-6, 6, (e.clientX - r.left - r.width / 2) * .15));
+        by(gsap.utils.clamp(-6, 6, (e.clientY - r.top - r.height / 2) * .3));
+      };
+      const leave = () => gsap.to(btn, { x: 0, y: 0, duration: .8, ease: 'elastic.out(1, .4)' });
+      btn.addEventListener('pointermove', move); btn.addEventListener('pointerleave', leave);
+      off.push(() => { btn.removeEventListener('pointermove', move); btn.removeEventListener('pointerleave', leave); });
+    }
+    return () => off.forEach((f) => f());
+  });
+
   // Already above the screen (an anchor link, a reload halfway down): shown, not replayed.
   const settle = () => reveals.forEach((tl, el) => { if (el.getBoundingClientRect().bottom < 0) tl.progress(1); });
   settle();
