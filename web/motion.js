@@ -20,6 +20,9 @@
 
   // Hero: the copy rises line by line, the TV and the phone slide into place.
   const hero = document.querySelector('.hero');
+  // Later than 1.2 s the CSS has started showing the hero by itself (style.css): no entrance then.
+  const late = getComputedStyle(document.querySelector('.hero .lead')).opacity !== '0';
+  root.classList.add('moving');
   // On wide screens the hero's layers scroll at different speeds. Set up before the entrance:
   // matchMedia restores what it found when the screen narrows, and it must find the phone untouched.
   mm.add(wide, () => {
@@ -40,10 +43,11 @@
     }, .7)
     .fromTo('.hero .tv', { opacity: 0, y: 40, scale: .96 }, { opacity: 1, y: 0, scale: 1, duration: 1.1 }, .15)
     .fromTo('.hero .phone', { opacity: 0, x: 40, y: 30, rotation: 4 }, { opacity: 1, x: 0, y: 0, rotation: 0, duration: 1.1 }, .35);
+  if (late) intro.progress(1);
   // Words, not letters: Ukrainian headings are long, and the line breaks must stay where the browser put them.
   SplitText.create('.hero h1', {
     type: 'words', mask: 'words', aria: 'auto', autoSplit: true,
-    onSplit: (self) => gsap.from(self.words, { yPercent: 110, duration: .8, ease: 'power3.out', stagger: .04, delay: .1 }),
+    onSplit: (self) => late || gsap.from(self.words, { yPercent: 110, duration: .8, ease: 'power3.out', stagger: .04, delay: .1 }),
   });
 
   // The story on the TV, over and over while the hero is on screen: a drop leaves the phone,
@@ -55,6 +59,7 @@
   };
   const from = () => at('.phone', .5, .3), to = () => at('.tv-screen', .5, .5);
   const [receiving, received] = $$('.tv-alt');
+  for (const img of [receiving, received]) img.src = img.dataset.src;
   const story = gsap.timeline({ paused: true, repeat: -1, delay: .4,
     // The flight is measured afresh at each loop's start, when every part is back at its start state.
     repeatRefresh: true })
@@ -67,10 +72,10 @@
     .to(receiving, { opacity: 1, duration: .4 }, 3.2)
     .to(received, { opacity: 1, duration: .4 }, 5.8)
     .to([received, receiving], { opacity: 0, duration: .6 }, 8.6);
-  let heroOn = true;
-  const run = () => (heroOn && intro.progress() === 1 && !document.hidden ? story.play() : story.pause());
+  let heroST; // ScrollTrigger may toggle while it's being created, before this is set
+  const run = () => (heroST && heroST.isActive && intro.progress() === 1 && !document.hidden ? story.play() : story.pause());
+  heroST = ScrollTrigger.create({ trigger: hero, start: 'top bottom', end: 'bottom top', onToggle: () => run() });
   intro.eventCallback('onComplete', run);
-  ScrollTrigger.create({ trigger: hero, start: 'top bottom', end: 'bottom top', onToggle: (self) => { heroOn = self.isActive; run(); } });
   document.addEventListener('visibilitychange', run);
 
   // The circle drifts on its own.
@@ -171,12 +176,14 @@
     for (const btn of $$('.btn:not(.btn-small)')) {
       const bx = gsap.quickTo(btn, 'x', { duration: .3, ease: 'power3.out' });
       const by = gsap.quickTo(btn, 'y', { duration: .3, ease: 'power3.out' });
+      let back;
       const move = (e) => {
+        back && back.kill();
         const r = btn.getBoundingClientRect();
         bx(gsap.utils.clamp(-6, 6, (e.clientX - r.left - r.width / 2) * .15));
         by(gsap.utils.clamp(-6, 6, (e.clientY - r.top - r.height / 2) * .3));
       };
-      const leave = () => gsap.to(btn, { x: 0, y: 0, duration: .8, ease: 'elastic.out(1, .4)' });
+      const leave = () => { bx.tween.pause(); by.tween.pause(); back = gsap.to(btn, { x: 0, y: 0, duration: .8, ease: 'elastic.out(1, .4)' }); };
       btn.addEventListener('pointermove', move); btn.addEventListener('pointerleave', leave);
       off.push(() => { btn.removeEventListener('pointermove', move); btn.removeEventListener('pointerleave', leave); });
     }
@@ -188,7 +195,7 @@
   const hideNav = gsap.to(nav, { yPercent: -100, duration: .3, ease: 'power2.out', paused: true });
   ScrollTrigger.create({ start: 0, end: 'max', onUpdate: (self) => {
     nav.classList.toggle('scrolled', self.scroll() > 8);
-    if (self.direction > 0 && self.scroll() > 120 && !nav.contains(document.activeElement)) hideNav.play();
+    if (self.direction > 0 && self.scroll() > 120 && !nav.querySelector(':focus-visible')) hideNav.play();
     else if (self.direction < 0) hideNav.reverse();
   } });
   nav.addEventListener('focusin', () => hideNav.reverse());
@@ -199,7 +206,7 @@
   }
   // Light or dark: the half-moon turns over.
   document.querySelector('.theme').addEventListener('click', () => {
-    gsap.fromTo('.theme svg', { rotation: 0 }, { rotation: 180, duration: .5, ease: 'power2.inOut' });
+    gsap.to('.theme svg', { rotation: '+=180', duration: .5, ease: 'power2.inOut' });
   });
 
   // Already above the screen (an anchor link, a reload halfway down): shown, not replayed.

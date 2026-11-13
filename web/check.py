@@ -81,7 +81,8 @@ def check_story():
         page = read(name)
         lang = "en" if root == "" else "uk"
         screen = page.split('<div class="tv-screen">')[1].split("</div>")[0]
-        alts = re.findall(r'<img class="tv-alt" src="([^"]+)" alt="" aria-hidden="true"', screen)
+        # data-src: motion.js loads them; without motion nobody downloads pictures they'd never see.
+        alts = re.findall(r'<img class="tv-alt" data-src="([^"]+)" alt="" aria-hidden="true"', screen)
         want = [f"{root}assets/{lang}-tv-receiving.webp", f"{root}assets/{lang}-tv-received-video.webp"]
         assert alts == want, f"{name}: tv-alt images {alts}, want {want}"
         for a in alts:
@@ -171,6 +172,20 @@ def check_motion_guard():
     assert "window.gsap && window.ScrollTrigger && window.SplitText && window.DrawSVGPlugin" in js, "ready needs every plugin"
     assert "if (!ready) { root.classList.remove('motion'); return; }" in js, "not ready: show the page now"
     assert re.search(r"catch \(e\) \{\s*ctx\.revert\(\);\s*root\.classList\.remove\('motion'\);", js), "an error must revert and show the page"
+
+
+def check_minors():
+    js, css = read("motion.js"), read("style.css")
+    # The hero doesn't wait the whole 3 s: CSS shows it at 1.2 s unless motion.js has taken over.
+    assert re.search(r"\.motion:not\(\.moving\) \.hero-copy > \*, \.motion:not\(\.moving\) \.devices-tilt > figure \{ animation: show \.4s 1\.2s forwards; \}", css), "hero failsafe in CSS"
+    assert "root.classList.add('moving')" in js and "if (late) intro.progress(1)" in js, "motion.js takes over the hero, or skips an entrance that came too late"
+    assert "img.src = img.dataset.src" in js, "motion.js loads the story pictures"
+    # A mouse click leaves focus in the menu; only keyboard focus keeps it on screen.
+    assert "nav.querySelector(':focus-visible')" in js and "nav.contains(document.activeElement)" not in js, "nav hides after a click"
+    assert "rotation: '+=180'" in js, "the theme icon turns from where it is"
+    assert "let heroOn" not in js and "heroST.isActive" in js, "the story runs only while the hero is really on screen"
+    assert "back && back.kill()" in js and "bx.tween.pause()" in js, "the spring-back and the pointer never fight"
+    assert "python3 build.py && python3 check.py && npx wrangler@4 deploy" in read("wrangler.jsonc"), "deploy runs the checks"
 
 if __name__ == "__main__":
     checks = [v for k, v in sorted(globals().items()) if k.startswith("check_")]

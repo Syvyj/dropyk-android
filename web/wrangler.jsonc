@@ -1,4 +1,4 @@
-// The site on Cloudflare (static assets only). Deploy: python3 build.py && npx wrangler@4 deploy
+// The site on Cloudflare (static assets only). Deploy: python3 build.py && python3 check.py && npx wrangler@4 deploy
 {
   "name": "dropyk",
   "compatibility_date": "2026-10-06",
