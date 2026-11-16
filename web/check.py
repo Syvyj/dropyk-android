@@ -50,7 +50,7 @@ def check_failsafe():
 
 
 
-REVEALS = {"strip", "how-title", "features-title", "more", "mac", "install", "private", "support"}
+REVEALS = {"strip", "how-title", "features-title", "more", "mac", "install", "private", "support", "kin"}
 
 
 def check_reveals():
