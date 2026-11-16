@@ -47,6 +47,16 @@ From an Android phone it's shorter: with Dropyk open on the TV, **Share → Quic
 
 No storage permission is needed on Android 10+. On Android 7–9 files go to the app's own folder.
 
+## More from the author
+
+[![Likhtar Home](https://raw.githubusercontent.com/Syvyj/Syvyj/main/assets/likhtar-home-card.png)](https://likhtar.syvyj.dev)
+
+**Likhtar Home.** A calm home screen for Android TV and Google TV: films first, no ads. [Website](https://likhtar.syvyj.dev) · [GitHub](https://github.com/Syvyj/likhtar-home)
+
+[![Shotleaf](https://raw.githubusercontent.com/Syvyj/Syvyj/main/assets/shotleaf-card.png)](https://shotleaf.syvyj.dev)
+
+**Shotleaf.** Screenshots, clipboard history and snippets in the Mac menu bar. [Website](https://shotleaf.syvyj.dev) · [GitHub](https://github.com/Syvyj/shotleaf)
+
 ## Support the author
 
 Dropyk is free and will stay free. If it saves you time, you can buy me a coffee:
@@ -63,7 +73,6 @@ Dropyk is free and will stay free. If it saves you time, you can buy me a coffee
 - The page address carries a secret key, so only someone who saw the code can send. *New address* on the TV changes it (bookmarks and the iPhone shortcut then need the new one).
 - Quick Share is encrypted end to end (the same UKEY2 key exchange phones use), and the TV asks before every transfer.
 - The TV listens only while Dropyk is open or *Receive in background* is on. No account, no ads, no tracking.
-
 
 ## Building
 

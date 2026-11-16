@@ -103,7 +103,7 @@
   // animate as a whole. Opacity only, never visibility: an element not shown yet stays focusable.
   const PARTS = {
     strip: 'li', more: 'h2, .more-card', mac: '.mac > div',
-    install: 'h2, li, .small', private: 'h2, li', support: '.support > img, .support > div > *',
+    install: 'h2, li, .small', private: 'h2, li', kin: 'h2, .kin-lead, .kin-card', support: '.support > img, .support > div > *',
   };
   const reveals = new Map();
   for (const el of $$('[data-reveal]')) {

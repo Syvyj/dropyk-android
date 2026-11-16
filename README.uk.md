@@ -47,6 +47,16 @@
 
 На Android 10+ дозвіл на доступ до пам'яті не потрібен. На Android 7–9 файли лягають у власну теку застосунку.
 
+## Від того ж автора
+
+[![Likhtar Home](https://raw.githubusercontent.com/Syvyj/Syvyj/main/assets/likhtar-home-card.png)](https://likhtar.syvyj.dev/uk/)
+
+**Likhtar Home.** Спокійний домашній екран для Android TV і Google TV: спершу фільми, без реклами. [Сайт](https://likhtar.syvyj.dev/uk/) · [GitHub](https://github.com/Syvyj/likhtar-home)
+
+[![Shotleaf](https://raw.githubusercontent.com/Syvyj/Syvyj/main/assets/shotleaf-card.png)](https://shotleaf.syvyj.dev/uk/)
+
+**Shotleaf.** Скріншоти, історія буфера й сніпети в рядку меню Mac. [Сайт](https://shotleaf.syvyj.dev/uk/) · [GitHub](https://github.com/Syvyj/shotleaf)
+
 ## Підтримати автора
 
 Dropyk безкоштовний і таким лишиться. Якщо він вам зручний, можна пригостити кавою:
@@ -63,7 +73,6 @@ Dropyk безкоштовний і таким лишиться. Якщо він 
 - В адресі сторінки є секретний ключ, тож надіслати може лише той, хто бачив код. *Нова адреса* на телевізорі його змінює (закладки й ярлик для iPhone тоді треба оновити).
 - Quick Share зашифрований від пристрою до пристрою (той самий обмін ключами UKEY2, що й у телефонів), і телевізор питає перед кожною передачею.
 - Телевізор приймає, лише поки відкритий Dropyk або ввімкнено *Прийом у фоні*. Без акаунта, реклами й стеження.
-
 
 ## Збірка
 

@@ -207,3 +207,17 @@ main > section { max-width: var(--max); margin: 0 auto; padding: clamp(64px, 8vw
 /* Hover lift (motion.js adds .lifted): the same soft shadow the screenshots have. */
 .lifted { box-shadow: 0 18px 44px rgba(40, 36, 100, .14); }
 .more-card, .private li, .install li, .give { transition: box-shadow .25s; }
+
+/* From the same author: each card tinted with its app's colour */
+.kin-lead { color: var(--muted); margin: 10px 0 0; }
+.kin-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 28px; }
+.kin-card { position: relative; display: grid; grid-template-columns: auto 1fr; gap: 6px 18px; align-items: center; padding: 24px 52px 24px 24px; border-radius: 22px;
+  background: linear-gradient(135deg, rgba(var(--tone), .18), transparent 60%), var(--card); border: 1px solid transparent; color: var(--ink); text-decoration: none;
+  transition: transform .25s, box-shadow .25s, border-color .25s; }
+.kin-card:hover, .kin-card:focus-visible { transform: translateY(-3px); border-color: rgba(var(--tone), .7); box-shadow: 0 18px 40px -18px rgba(var(--tone), .55); }
+.kin-card img { grid-row: span 2; width: 64px; height: 64px; border-radius: 16px; filter: drop-shadow(0 8px 16px rgba(40, 36, 100, .18)); }
+.kin-card b { display: block; font-size: 19px; margin-bottom: 4px; }
+.kin-card small { color: var(--muted); font-size: 15px; }
+.kin-tag { font-style: normal; justify-self: start; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; background: rgba(var(--tone), .18); color: var(--ink); }
+.kin-arrow { position: absolute; right: 20px; top: 18px; font-size: 20px; color: rgb(var(--tone)); }
+@media (max-width: 760px) { .kin-cards { grid-template-columns: 1fr; } .kin-card { align-items: start; } }
