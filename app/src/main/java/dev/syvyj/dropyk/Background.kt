@@ -88,10 +88,10 @@ class Background : Service() {
             .build()
     }
 
-    /** Starts the service again after a reboot, if it was on. */
+    /** Starts the service again after a reboot or an update, if it was on. */
     class Boot : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            if (intent.action == Intent.ACTION_BOOT_COMPLETED && isOn(context)) start(context)
+            if ((intent.action == Intent.ACTION_BOOT_COMPLETED || intent.action == Intent.ACTION_MY_PACKAGE_REPLACED) && isOn(context)) start(context)
         }
     }
 
