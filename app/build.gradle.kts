@@ -14,8 +14,8 @@ android {
         applicationId = "dev.syvyj.dropyk"
         minSdk = 24
         targetSdk = 36
-        versionCode = 9
-        versionName = "0.5.2"
+        versionCode = 10
+        versionName = "0.5.3"
     }
 
     // Release key from `.env` or `-P`; without it the release build is unsigned (app-release-unsigned.apk):
