@@ -39,8 +39,11 @@ def donate_block(lang):
 
 def downloads(repo, names):
     """Downloads of the named release files over all releases (the in-app updaters' too); None if GitHub can't be reached."""
-    req = urllib.request.Request(f"https://api.github.com/repos/{repo}/releases?per_page=100",
-                                 headers={"Accept": "application/vnd.github+json", "User-Agent": "dropyk-site-build"})
+    headers = {"Accept": "application/vnd.github+json", "User-Agent": "dropyk-site-build"}
+    # Without a token GitHub allows 60 requests an hour; GITHUB_TOKEN=$(gh auth token) lifts that.
+    if os.environ.get("GITHUB_TOKEN"):
+        headers["Authorization"] = "Bearer " + os.environ["GITHUB_TOKEN"]
+    req = urllib.request.Request(f"https://api.github.com/repos/{repo}/releases?per_page=100", headers=headers)
     try:
         with urllib.request.urlopen(req, timeout=10) as r:
             releases = json.load(r)
