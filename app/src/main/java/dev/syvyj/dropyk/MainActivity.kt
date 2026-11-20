@@ -151,6 +151,7 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onStart() { super.onStart(); visible = true }
+    override fun onResume() { super.onResume(); resumeInstall(this) }
     override fun onStop() { super.onStop(); visible = false }
 
     /** Closed with Back and not receiving in background: stop listening, as the README promises. */
@@ -165,6 +166,8 @@ class MainActivity : ComponentActivity() {
     companion object {
         /** On screen now: the background service doesn't bring it up again. */
         @Volatile var visible = false
+        /** An APK waiting on the "install unknown apps" permission. */
+        var pendingApk: Pair<Uri, String>? = null
     }
 }
 
@@ -625,8 +628,18 @@ private fun openUri(context: Context, intent: Intent, title: String? = null) {
 /** APK: first the one-time "install unknown apps" permission, then the system installer. */
 private fun install(context: Context, uri: Uri, name: String) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && !context.packageManager.canRequestPackageInstalls()) {
+        // Coming back from the permission screen opens the installer: no second "Install".
+        MainActivity.pendingApk = uri to name
         openUri(context, Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, "package:${context.packageName}".toUri()))
         return
     }
     openFile(context, uri, name, Drop.APK)
+}
+
+/** Back from the permission screen: the APK it was asked for, if the permission was given. */
+internal fun resumeInstall(context: Context) {
+    val (uri, name) = MainActivity.pendingApk ?: return
+    MainActivity.pendingApk = null
+    // Back without allowing it: nothing; "Install" asks again.
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O || context.packageManager.canRequestPackageInstalls()) openFile(context, uri, name, Drop.APK)
 }
