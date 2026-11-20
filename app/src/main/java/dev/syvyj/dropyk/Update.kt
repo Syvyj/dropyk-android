@@ -93,7 +93,8 @@ object Update {
         if (!force && now - prefs.getLong(KEY_CHECKED, 0) < CHECK_MS) return@withContext true
         val result = runCatching {
             get(LATEST, TIMEOUT_MS) { c ->
-                if (c.responseCode != 200) error("GitHub ${c.responseCode}") else parse(c.inputStream.bufferedReader().readText())
+                c.requestMethod = "HEAD"
+                if (c.responseCode != 200) error("GitHub ${c.responseCode}") else parse(c.url.toString())
             }
         }.onFailure { Log.w(TAG, "update check", it) }
         // No answer (no network, rate limit) isn't "checked": the next start asks again.
@@ -171,7 +172,6 @@ object Update {
         val c = URL(url).openConnection() as HttpURLConnection
         c.connectTimeout = TIMEOUT_MS
         c.readTimeout = readTimeout
-        c.setRequestProperty("Accept", "application/vnd.github+json")
         return try { block(c) } finally { c.disconnect() }
     }
 
@@ -180,7 +180,9 @@ object Update {
     private fun decode(raw: String) = runCatching { JSONObject(raw).let { AppRelease(it.getString("v"), it.getString("u")) } }.getOrNull()
 
     private const val TAG = "DropykUpdate"
-    private const val LATEST = "https://api.github.com/repos/Syvyj/dropyk-android/releases/latest"
+    // The plain page, not api.github.com: the API allows 60 requests an hour per home address, and
+    // everything at home shares them. The page redirects to the newest release's tag.
+    private const val LATEST = "https://github.com/Syvyj/dropyk-android/releases/latest"
     private const val APK_NAME = "dropyk.apk"
     private const val CHECK_MS = 6 * 60 * 60_000L
     private const val TIMEOUT_MS = 15_000
@@ -188,13 +190,10 @@ object Update {
     private const val KEY_CHECKED = "checked_at"
     private const val KEY_RELEASE = "release"
 
-    /** GitHub's answer → a release; `null` without an APK among its assets. */
-    internal fun parse(json: String): AppRelease? {
-        val o = JSONObject(json)
-        val assets = o.optJSONArray("assets") ?: return null
-        val apk = (0 until assets.length()).mapNotNull(assets::optJSONObject)
-            .firstOrNull { it.optString("name") == APK_NAME }?.optString("browser_download_url") ?: return null
-        return AppRelease(o.optString("tag_name").removePrefix("v"), apk)
+    /** Where "latest" led → a release; `null` if it wasn't a release's page (no releases yet). */
+    internal fun parse(url: String): AppRelease? {
+        val tag = url.substringAfter("/releases/tag/", "").takeIf { it.isNotEmpty() && '/' !in it } ?: return null
+        return AppRelease(tag.removePrefix("v"), "https://github.com/Syvyj/dropyk-android/releases/download/$tag/$APK_NAME")
     }
 
     /** "0.1.10" is newer than "0.1.9"; suffixes like "-beta1" are ignored. */

@@ -16,10 +16,11 @@ class UpdateTest {
         assertFalse(Update.newer("0.2.0-beta1", "0.2.0"))
     }
 
-    @Test fun parsesTheApkAsset() {
-        val json = """{"tag_name":"v0.2.0","assets":[{"name":"notes.txt","browser_download_url":"x"},
-            {"name":"dropyk.apk","browser_download_url":"https://github.com/Syvyj/dropyk-android/releases/download/v0.2.0/dropyk.apk"}]}"""
-        assertEquals(AppRelease("0.2.0", "https://github.com/Syvyj/dropyk-android/releases/download/v0.2.0/dropyk.apk"), Update.parse(json))
-        assertNull(Update.parse("""{"tag_name":"v0.2.0","assets":[]}"""))
+    @Test fun readsTheReleaseFromWhereLatestLeads() {
+        assertEquals(
+            AppRelease("0.5.2", "https://github.com/Syvyj/dropyk-android/releases/download/v0.5.2/dropyk.apk"),
+            Update.parse("https://github.com/Syvyj/dropyk-android/releases/tag/v0.5.2"),
+        )
+        assertNull(Update.parse("https://github.com/Syvyj/dropyk-android/releases"))
     }
 }
