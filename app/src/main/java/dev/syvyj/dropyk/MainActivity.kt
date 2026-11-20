@@ -5,6 +5,8 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Matrix
+import androidx.exifinterface.media.ExifInterface
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -521,7 +523,14 @@ private fun decodeSampled(context: Context, uri: Uri, maxSide: Int): Bitmap? {
     context.contentResolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, bounds) }
     var sample = 1
     while (maxOf(bounds.outWidth, bounds.outHeight) / (sample * 2) >= maxSide) sample *= 2
-    return context.contentResolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, BitmapFactory.Options().apply { inSampleSize = sample }) }
+    val bitmap = context.contentResolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, BitmapFactory.Options().apply { inSampleSize = sample }) } ?: return null
+    val turn = when (context.contentResolver.openInputStream(uri)?.use { runCatching { ExifInterface(it).getAttributeInt(ExifInterface.TAG_ORIENTATION, 0) }.getOrNull() }) {
+        ExifInterface.ORIENTATION_ROTATE_90 -> 90f
+        ExifInterface.ORIENTATION_ROTATE_180 -> 180f
+        ExifInterface.ORIENTATION_ROTATE_270 -> 270f
+        else -> return bitmap
+    }
+    return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, Matrix().apply { postRotate(turn) }, true)
 }
 
 /** The QR matrix comes from zxing; drawing its squares on one Canvas beats making a Bitmap. */
@@ -540,7 +549,11 @@ private fun QrCode(content: String, size: Dp) {
 
 @Composable
 private fun size(bytes: Long): String =
-    if (bytes > 1_000_000_000) stringResource(R.string.size_gb, bytes / 1e9) else stringResource(R.string.size_mb, bytes / 1e6)
+    when {
+        bytes > 1_000_000_000 -> stringResource(R.string.size_gb, bytes / 1e9)
+        bytes >= 1_000_000 -> stringResource(R.string.size_mb, bytes / 1e6)
+        else -> stringResource(R.string.size_kb, (bytes / 1e3).coerceAtLeast(1.0))
+    }
 
 /** Where donations go: the same pages as on the site and in Likhtar. */
 private class Donate(val name: Int, val note: Int, val url: String)

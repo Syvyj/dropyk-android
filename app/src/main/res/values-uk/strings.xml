@@ -15,6 +15,7 @@
     <string name="done">Готово</string>
     <string name="saved_to">Збережено в %1$s</string>
     <string name="no_app">На цьому телевізорі немає застосунку, щоб це відкрити</string>
+    <string name="size_kb">%1$.0f КБ</string>
     <string name="size_mb">%1$.0f МБ</string>
     <string name="size_gb">%1$.1f ГБ</string>
     <string name="support">Підтримати автора</string>

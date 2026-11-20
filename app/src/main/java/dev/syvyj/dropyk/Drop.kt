@@ -102,10 +102,11 @@ object Drop {
     /**
      * Address for the QR; `null` when the TV isn't on a local network or no port is free. The
      * screen asks again every few seconds, so a new IP (or a network that came up late) shows up.
+     * It listens even without an address yet: after a reboot the background service starts before
+     * Wi-Fi does, asks once, and the phone that knows the address must still get through.
      */
     @Synchronized
     fun start(): String? {
-        val ip = lanAddress() ?: return null
         val listening = server ?: (PORTS.firstNotNullOfOrNull { runCatching { ServerSocket(it) }.getOrNull() } ?: return null).also { s ->
             server = s
             thread(name = "drop", isDaemon = true) {
@@ -118,6 +119,7 @@ object Drop {
                 }
             }
         }
+        val ip = lanAddress() ?: return null
         return "http://$ip:${listening.localPort}/$token/"
     }
 

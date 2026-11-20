@@ -63,6 +63,8 @@ dependencies {
     implementation("androidx.compose.foundation:foundation")
     implementation("androidx.compose.ui:ui")
     implementation("androidx.tv:tv-material:1.1.0")
+    // Photo previews the right way up: the platform's EXIF reader is buggy on older TVs.
+    implementation("androidx.exifinterface:exifinterface:1.4.2")
     // QR matrix only — no camera or scanner.
     implementation("com.google.zxing:core:3.5.4")
     // Quick Share's wire format (the .proto files come from NearDrop).

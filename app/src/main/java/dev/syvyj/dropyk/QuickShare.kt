@@ -173,7 +173,6 @@ object QuickShare {
         private val buffers = HashMap<Long, java.io.ByteArrayOutputStream>()
         private val files = LinkedHashMap<Long, Item>()
         private var textId = 0L
-        private var textIsUrl = false
         private var total = 0L
         private var received = 0L
         private var shownAt = 0L
@@ -265,7 +264,7 @@ object QuickShare {
 
         private fun ukeyClientFinish(msg: Ukey2Message, raw: ByteArray) {
             if (msg.messageType != Ukey2Message.Type.CLIENT_FINISH) error("UKEY2: no client finish")
-            if (!MessageDigest.getInstance("SHA-512").digest(raw).contentEquals(commitment)) error("UKEY2: commitment mismatch")
+            if (!MessageDigest.isEqual(MessageDigest.getInstance("SHA-512").digest(raw), commitment)) error("UKEY2: commitment mismatch")
             val peer = GenericPublicKey.parseFrom(Ukey2ClientFinished.parseFrom(msg.messageData).publicKey).ecP256PublicKey
             val pair = keys!!
             val params = (pair.public as ECPublicKey).params
@@ -321,7 +320,7 @@ object QuickShare {
         }
 
         private fun secureMessage(msg: SecureMessage) {
-            if (!hmac(recvHmac!!, msg.headerAndBody.toByteArray()).contentEquals(msg.signature.toByteArray())) error("bad HMAC")
+            if (!MessageDigest.isEqual(hmac(recvHmac!!, msg.headerAndBody.toByteArray()), msg.signature.toByteArray())) error("bad HMAC")
             val hb = HeaderAndBody.parseFrom(msg.headerAndBody)
             val plain = Cipher.getInstance("AES/CBC/PKCS5Padding").apply {
                 init(Cipher.DECRYPT_MODE, SecretKeySpec(decryptKey, "AES"), IvParameterSpec(hb.header.iv.toByteArray()))
@@ -401,7 +400,6 @@ object QuickShare {
                 intro.textMetadataCount == 1 -> {
                     val meta = intro.getTextMetadata(0)
                     textId = meta.payloadId
-                    textIsUrl = meta.type == Protocol.TextMetadata.Type.URL
                     what = meta.textTitle
                     count = 1
                 }
@@ -472,7 +470,7 @@ object QuickShare {
             if (text.isEmpty()) return disconnect()
             if (bytes.size <= Drop.MAX_TEXT) {
                 // A link marked as plain text still opens; text marked as a link but not one is shown.
-                Drop.show(if (textIsUrl) Drop.textState(text) else DropState.Text(text))
+                Drop.show(Drop.textState(text))
             } else {
                 val name = java.text.SimpleDateFormat("yyyy-MM-dd HH.mm.ss", java.util.Locale.ROOT).format(java.util.Date()) + ".txt"
                 val target = Drop.create(name, "text/plain", Drop.sorted)

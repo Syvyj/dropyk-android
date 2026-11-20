@@ -16,6 +16,7 @@
     <string name="done">Done</string>
     <string name="saved_to">Saved to %1$s</string>
     <string name="no_app">No app on this TV can open it</string>
+    <string name="size_kb">%1$.0f KB</string>
     <string name="size_mb">%1$.0f MB</string>
     <string name="size_gb">%1$.1f GB</string>
     <string name="support">Support the author</string>
